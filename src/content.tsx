@@ -16,7 +16,7 @@ import TagInputField from "~components/Input"
 import Item from "~components/Item"
 import PreItem from "~components/Item/PreItem"
 import { aiKey, tagKeys, TagStartKey } from "~constants"
-import type { Action } from "~types/tab"
+import type { Action } from "~types"
 import { processDomain, processDomains } from "~utils"
 
 export const getStyle: PlasmoGetStyle = () => {

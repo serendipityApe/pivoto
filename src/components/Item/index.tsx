@@ -3,7 +3,7 @@ import React, { memo, useEffect, useRef } from "react"
 
 import { corsTranslate, getFaviconUrl, getLastActiveTimeString } from "~/utils"
 import { CHROME_GROUP_COLORS } from "~constants"
-import type { Action } from "~types/tab"
+import type { Action } from "~types"
 
 type ItemProps = {
   isActive: boolean
