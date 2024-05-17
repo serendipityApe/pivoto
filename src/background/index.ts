@@ -6,7 +6,6 @@ const browserAction =
     : chrome.action
 const browserInstance =
   process.env.PLASMO_BROWSER === "firefox" ? browser : chrome
-
 type Modify<T, R> = Omit<T, keyof R> & R
 export type Action = Modify<
   Partial<chrome.tabs.Tab>,
@@ -37,6 +36,11 @@ type TabHistoryItem = {
   lastActiveTime: number
 }
 let tabHistory: TabHistoryItem[] = []
+
+storage.get("tabHistory", function (result) {
+  console.log("Value of tabHistory is: " + result.tabHistory)
+  tabHistory = result.tabHistory || []
+})
 
 /** 
 	@param	
@@ -153,9 +157,7 @@ const clearActions = async () => {
         keys: ["⌥", "⇧", "P"]
       }
     }
-    actions = disabledActions
-      ? []
-      : []
+    actions = disabledActions ? [] : []
 
     if (!isMac) {
       for (let action of actions) {
@@ -461,6 +463,7 @@ const getTabs = async () => {
     .reverse()
     .filter((tab) => tab)
   tabs = tabs.filter((tab) => {
+    if (!tab.id) return false
     if (currentTab?.id && tab.id === currentTab.id) return false
     if (preActiveTab?.id && tab.id === preActiveTab?.id) {
       preActiveTab_chrome = tab
@@ -836,6 +839,17 @@ browserInstance.runtime.onMessage.addListener(
 // Get actions
 resetPivoto()
 
+//cache
+function cacheData() {
+  storage.set({ tabHistory }, function () {
+    console.log("tabHistory cached.")
+  })
+}
+
+// Interval行一次 cacheData
+setInterval(cacheData, 60000)
+
+// services
 function apiCallProcessor(data: any) {
   console.log(typeof data, data, "apiCallProcessor")
 

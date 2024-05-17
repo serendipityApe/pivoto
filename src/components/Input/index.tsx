@@ -121,10 +121,10 @@ const TagInputField = forwardRef<HTMLInputElement, TagInputFieldProps>(
     const inputCls =
       "bg-transparent absolute outline-none text-2xl flex-grow min-w-1/2 border-0 rounded-md p-0 ml-0 font-normal h-12 w-11/12 mx-auto block text-text caret-accent font-inter box-border shadow-none"
     return (
-      <div className="flex overflow-auto pl-6 text-black items-center border-0 border-b border-solid border-select">
+      <div className="flex overflow-auto pl-6 text-black items-center border-0 border-b border-solid border-select dark:border-selectDark">
         {tags.map((tag, index) => (
           <div
-            className="flex items-center my-1 mr-2.5 py-1.5 px-2.5 border border-accent rounded-lg text-white bg-accent whitespace-nowrap max-h-8"
+            className="flex items-center my-1 mr-2.5 py-1.5 px-2.5 font-medium rounded-lg text-sky-600 dark:text-sky-400 bg-sky-400/10 whitespace-nowrap max-h-8"
             key={index}>
             {tag}
             {/* <button onClick={() => deleteTag(index)}>x</button> */}
@@ -132,7 +132,7 @@ const TagInputField = forwardRef<HTMLInputElement, TagInputFieldProps>(
         ))}
         <span className="relative w-full h-16 flex items-center">
           <input
-            className={cls(inputCls)}
+            className={cls(inputCls, "dark:text-textDark")}
             ref={ref}
             disabled={disabled}
             value={input}
@@ -147,7 +147,7 @@ const TagInputField = forwardRef<HTMLInputElement, TagInputFieldProps>(
           {suggestion && (
             <input
               disabled
-              className={cls(inputCls, "text-text3 -z-10")}
+              className={cls(inputCls, "text-text3 dark:text-slate-500 -z-10")}
               value={suggestion}
             />
           )}

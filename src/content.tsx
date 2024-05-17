@@ -365,7 +365,7 @@ function Content() {
           className="fixed w-window h-3/4 border border-transparent rounded-md mx-auto my-auto top-0 right-0 bottom-0 left-0 z-max transition-all duration-200 pointer-events-auto">
           <div
             id="pivoto"
-            className="shadow-lg box-content absolute w-full bg-background border border-border rounded-lg top-0 left-0 z-max transition-all duration-200 ease-custom block">
+            className="shadow-lg box-content absolute w-full bg-background dark:bg-backgroundDark border border-border dark:border-borderDark rounded-lg top-0 left-0 z-max transition-all duration-200 ease-custom block">
             <div id="pivoto-search">
               <TagInputField
                 tags={tags}
@@ -383,7 +383,7 @@ function Content() {
 
             {isVirtualList ? (
               <List
-                className="scrollbar scrollbar-track-white scrollbar-thumb-select scrollbar-track-border-0"
+                className="scrollbar scrollbar-track-white dark:scrollbar-track-backgroundDark scrollbar-thumb-select dark:scrollbar-thumb-preSelectDark scrollbar-track-border-0"
                 scrollToIndex={activeIndex}
                 height={400}
                 width={700}
@@ -395,7 +395,7 @@ function Content() {
               <div
                 id="pivoto-list"
                 className={cls(
-                  "w-full overflow-y-scroll h-full max-h-[400px] min-h-[400px] border-t-1 border-solid border-border relative scrollbar scrollbar-track-white scrollbar-thumb-select scrollbar-track-border-0"
+                  "w-full overflow-y-scroll h-full max-h-[400px] min-h-[400px] border-t-1 border-solid border-border dark:border-borderDark relative scrollbar scrollbar-track-white scrollbar-thumb-select dark:scrollbar-track-backgroundDark dark:scrollbar-thumb-preSelectDark scrollbar-track-border-0"
                 )}>
                 {filteredActions.map((action, index) => (
                   <Item
@@ -411,18 +411,20 @@ function Content() {
             )}
             <div
               id="pivoto-footer"
-              className="h-12 text-sm leading-12 border-t border-border w-full px-6 mr-auto flex items-center justify-between">
-              <div id="pivoto-results" className="text-text3 font-medium">
+              className="h-12 text-sm leading-12 border-t border-border dark:border-borderDark w-full px-6 mr-auto flex items-center justify-between">
+              <div
+                id="pivoto-results"
+                className="text-text3 dark:text-text3Dark  font-medium">
                 {filteredActions.length} results
               </div>
               <div
                 id="pivoto-arrows"
-                className="text-text3 font-medium float-right">
+                className="text-text3 dark:text-text3Dark  font-medium float-right">
                 Use arrow keys{" "}
-                <span className="inline-block rounded bg-shortcut text-text text-center h-5 leading-5 min-w-5 px-1 mx-1">
+                <span className="inline-block rounded bg-shortcut dark:bg-shortcutDark text-text dark:text-textDark text-center h-5 leading-5 min-w-5 px-1 mx-1">
                   ↑
                 </span>
-                <span className="inline-block rounded bg-shortcut text-text text-center h-5 leading-5 min-w-5 px-1 mx-1">
+                <span className="inline-block rounded bg-shortcut dark:bg-shortcutDark text-text dark:text-textDark text-center h-5 leading-5 min-w-5 px-1 mx-1">
                   ↓
                 </span>{" "}
                 to navigate
