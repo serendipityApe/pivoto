@@ -9,6 +9,7 @@ type ItemProps = {
   isActive: boolean
   onClick: () => void
   style?: any
+  enterText: React.ReactNode
 } & Action
 const Item = memo(
   ({
@@ -22,7 +23,8 @@ const Item = memo(
     onClick,
     style,
     groupTitle,
-    groupColor
+    groupColor,
+    enterText
   }: ItemProps) => {
     const lastText = getLastActiveTimeString(lastActiveTime)
     // const domain = url ? new URL(url)?.hostname : null
@@ -102,14 +104,7 @@ const Item = memo(
                 "opacity-0": !isActive
               }
             )}>
-            Select{" "}
-            <span
-              className={cls(
-                "inline-block text-sm rounded bg-shortcut dark:bg-shortcutDark text-text dark:text-textDark text-center h-5 leading-5 min-w-5 px-1"
-              )}>
-              ⏎
-            </span>
-            {/* <span className="pivoto-shortcut">⬅</span> */}
+            {enterText}
           </div>
         </div>
       </>

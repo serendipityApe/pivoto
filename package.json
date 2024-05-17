@@ -66,6 +66,7 @@
       "scripting",
       "search",
       "window",
+      "commands",
       "favicon",
       "storage",
       "http://127.0.0.1:3000"

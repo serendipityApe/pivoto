@@ -730,6 +730,13 @@ browserInstance.runtime.onMessage.addListener(
             })
           })
         return true
+      case "command-shortcuts":
+        browserInstance.commands.getAll((commands) => {
+          sendResponse({
+            data: commands
+          })
+        })
+        return true
       // case "search-readingList":
       //   chrome.readingList.query({ title: message.query })
       //     .then((data) => {

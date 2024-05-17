@@ -15,6 +15,7 @@ import { List } from "react-virtualized"
 import TagInputField from "~components/Input"
 import Item from "~components/Item"
 import PreItem from "~components/Item/PreItem"
+import KeyTag from "~components/KeyTag"
 import { aiKey, tagKeys, TagStartKey } from "~constants"
 import type { Action } from "~types"
 import { processDomain, processDomains } from "~utils"
@@ -35,11 +36,50 @@ function Content() {
   const [tags, setTags] = useState([])
   const [trieData, setTrieData] = useState([])
   const [InputDisabled, setInputDisabled] = useState(false)
+  const [shortcuts, setShortcuts] = useState([])
 
   const isTagMode = useMemo(
     () => tags.some((tag) => tagKeys.includes(tag)),
     [tags]
   )
+  const navigateText = useMemo(() => {
+    if (InputDisabled) {
+      const shortcut = shortcuts.find((s) => s.name === "cycle-tab").shortcut
+      return (
+        <div
+          id="pivoto-arrows"
+          className="text-text3 dark:text-text3Dark  font-medium float-right">
+          Hold
+          <KeyTag>{shortcut[0]}</KeyTag>
+          and press
+          <KeyTag>{shortcut[1]}</KeyTag> to navigate
+        </div>
+      )
+    }
+    return (
+      <div
+        id="pivoto-arrows"
+        className="text-text3 dark:text-text3Dark  font-medium float-right">
+        Use arrow keys <KeyTag>↑</KeyTag>
+        <KeyTag>↓</KeyTag> to navigate
+      </div>
+    )
+  }, [shortcuts, InputDisabled])
+  const enterText = useMemo(() => {
+    if (InputDisabled) {
+      const shortcut = shortcuts.find((s) => s.name === "cycle-tab").shortcut
+      return (
+        <span>
+          Release <KeyTag>{shortcut[0]}</KeyTag>
+        </span>
+      )
+    }
+    return (
+      <span>
+        Select <KeyTag>⏎</KeyTag>
+      </span>
+    )
+  }, [shortcuts, InputDisabled])
   const filteredActions = useMemo(() => {
     if (isTagMode) return originActions
     if (searchValue.length > 0) {
@@ -181,8 +221,6 @@ function Content() {
       chrome.runtime.sendMessage(
         { request: "search-history", query: searchValue },
         (response) => {
-          console.log(response.data)
-
           setOriginActions(response.data)
           !deferredIsTagMode && setTrieData(processDomains(response.data))
         }
@@ -218,6 +256,9 @@ function Content() {
   //initial
   useEffect(() => {
     getActions()
+    chrome.runtime.sendMessage({ request: "command-shortcuts" }, (response) => {
+      setShortcuts(response.data)
+    })
   }, [])
 
   useEffect(() => {
@@ -344,6 +385,7 @@ function Content() {
         }}
         isActive={activeIndex === index}
         style={style}
+        enterText={enterText}
         key={key || action.id || action.desc}
         {...action}
         domain={processDomain(action.url)}
@@ -399,6 +441,7 @@ function Content() {
                 )}>
                 {filteredActions.map((action, index) => (
                   <Item
+                    enterText={enterText}
                     onClick={() => {
                       handleAction(index)
                     }}
@@ -417,18 +460,7 @@ function Content() {
                 className="text-text3 dark:text-text3Dark  font-medium">
                 {filteredActions.length} results
               </div>
-              <div
-                id="pivoto-arrows"
-                className="text-text3 dark:text-text3Dark  font-medium float-right">
-                Use arrow keys{" "}
-                <span className="inline-block rounded bg-shortcut dark:bg-shortcutDark text-text dark:text-textDark text-center h-5 leading-5 min-w-5 px-1 mx-1">
-                  ↑
-                </span>
-                <span className="inline-block rounded bg-shortcut dark:bg-shortcutDark text-text dark:text-textDark text-center h-5 leading-5 min-w-5 px-1 mx-1">
-                  ↓
-                </span>{" "}
-                to navigate
-              </div>
+              {navigateText}
             </div>
           </div>
         </div>

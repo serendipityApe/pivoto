@@ -114,7 +114,19 @@ const TagInputField = forwardRef<HTMLInputElement, TagInputFieldProps>(
     const onKeyUp = () => {
       setIsKeyReleased(true)
     }
-
+    const placeholderText = useMemo(() => {
+      if (disabled) return "Disabled input"
+      switch (tags[0]) {
+        case "bookmark":
+          return "Search bookmarks"
+        case "history":
+          return "Search history"
+        case "ai":
+          return "Ask a question or describe your needs"
+        default:
+          return `Search tabs or type ${TagStartKey} to select a command`
+      }
+    }, [tags, disabled])
     // const deleteTag = (index) => {
     //   setTags((prevState) => prevState.filter((tag, i) => i !== index))
     // }
@@ -137,9 +149,7 @@ const TagInputField = forwardRef<HTMLInputElement, TagInputFieldProps>(
             disabled={disabled}
             value={input}
             type="text"
-            placeholder={
-              disabled ? "Disabled input" : "Type a command or search"
-            }
+            placeholder={placeholderText}
             onKeyDown={onKeyDown}
             onKeyUp={onKeyUp}
             onChange={onChange}
