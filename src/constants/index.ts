@@ -8,7 +8,7 @@ export const CHROME_GROUP_COLORS = {
   purple: "#9648eb",
   blue: "#3871e0",
   yellow: "#eeae3c",
-  green: "##3c7e40",
+  green: "#3c7e40",
   origin: "#ec9550",
   grey: "#606367",
   cyan: "#357981"

@@ -14,4 +14,4 @@ export type Action = {
   title: string
   url: string
   discarded: boolean
-}
+} & chrome.tabs.Tab

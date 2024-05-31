@@ -1,5 +1,6 @@
 import cls from "classnames"
 import React, { memo, useEffect, useRef } from "react"
+import IncognitoIcon from "react:~/assets/incognito.svg"
 
 import { corsTranslate, getFaviconUrl, getLastActiveTimeString } from "~/utils"
 import { CHROME_GROUP_COLORS } from "~constants"
@@ -24,7 +25,8 @@ const Item = memo(
     style,
     groupTitle,
     groupColor,
-    enterText
+    enterText,
+    incognito
   }: ItemProps) => {
     const lastText = getLastActiveTimeString(lastActiveTime)
     // const domain = url ? new URL(url)?.hostname : null
@@ -85,6 +87,13 @@ const Item = memo(
               {title}
             </div>
             <div className="text-text3 dark:text-text3Dark  text-sm whitespace-nowrap overflow-hidden overflow-ellipsis flex items-center gap-2 max-w-md">
+              {incognito && (
+                <IncognitoIcon
+                  width={16}
+                  height={16}
+                  className="fill-text3 dark:fill-text3Dark"
+                />
+              )}
               {groupColor && (
                 <span
                   className="w-1.5 h-1.5 rounded-full"
