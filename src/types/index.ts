@@ -12,6 +12,5 @@ export type Action = {
   groupColor?: string
   lastActiveTime?: number
   title: string
-  url: string
-  discarded: boolean
-} & chrome.tabs.Tab
+  CustomIcon?: React.ReactNode
+} & Partial<chrome.tabs.Tab>

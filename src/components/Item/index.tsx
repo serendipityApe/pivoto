@@ -26,7 +26,8 @@ const Item = memo(
     groupTitle,
     groupColor,
     enterText,
-    incognito
+    incognito,
+    CustomIcon
   }: ItemProps) => {
     const lastText = getLastActiveTimeString(lastActiveTime)
     // const domain = url ? new URL(url)?.hostname : null
@@ -73,13 +74,17 @@ const Item = memo(
                 "after:absolute after:top-0 after:bottom-0 after:right-0 after:left-1/2 after:border-2 after:border-dashed after:border-discarded after:dark:border-gray-800 after:rounded-tr-[80px] after:rounded-br-[80px] after:border-l-0":
                   discarded
               })}>
-              <img
-                src={getFaviconUrl(url)}
-                alt="favicon"
-                className={cls("w-5 h-5", {
-                  "w-3 h-3 rounded-full overflow-hidden": discarded
-                })}
-              />
+              {CustomIcon ? (
+                CustomIcon
+              ) : (
+                <img
+                  src={getFaviconUrl(url)}
+                  alt="favicon"
+                  className={cls("w-5 h-5", {
+                    "w-3 h-3 rounded-full overflow-hidden": discarded
+                  })}
+                />
+              )}
             </span>
           </span>
           <div className="ml-4 h-12 text-left flex-1 flex flex-col justify-between">

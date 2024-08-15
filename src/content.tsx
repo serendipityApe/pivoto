@@ -11,6 +11,7 @@ import {
   useState
 } from "react"
 import { List } from "react-virtualized"
+import AiIcon from "react:~/assets/ai.svg"
 
 import TagInputField from "~components/Input"
 import Item from "~components/Item"
@@ -228,8 +229,7 @@ function Content() {
     } else if (tags.includes("ai")) {
       setOriginActions([
         {
-          favIconUrl:
-            "https://www.gstatic.com/devrel-devsite/prod/v5ba20c1e081870fd30b7c8ebfa8711369a575956c1f44323664285c05468c6a4/chrome/images/favicon.png",
+          CustomIcon: <AiIcon className="w-6 h-6" />,
           title: "Execute ai command suggestions",
           // desc: "Request used: 1 / 100",
           // url: "https://chat.openai.com/",
