@@ -13,4 +13,6 @@ export type Action = {
   lastActiveTime?: number
   title: string
   CustomIcon?: React.ReactNode
-} & Partial<chrome.tabs.Tab>
+} & Partial<chrome.tabs.Tab> &
+  Partial<chrome.bookmarks.BookmarkTreeNode> &
+  Partial<chrome.history.HistoryItem>

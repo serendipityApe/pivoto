@@ -778,7 +778,7 @@ browserInstance.runtime.onMessage.addListener(
             sendResponse({ data: results })
           }
 
-          browserInstance.bookmarks.getRecent(100, process_bookmark)
+          browserInstance.bookmarks.getRecent(1000, process_bookmark)
         } else {
           browserInstance.bookmarks
             .search({ query: message.query })
@@ -889,7 +889,7 @@ function apiCallProcessor(data: any) {
   }
 }
 function fetchFn(content: string, callback: (result) => void) {
-  fetch("http://127.0.0.1:3000/fn", {
+  fetch("http://127.0.0.1:3000/fn/calling", {
     method: "POST",
     headers: {
       "Content-Type": "application/json" // 指定内容类型为JSON

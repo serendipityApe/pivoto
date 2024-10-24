@@ -13,3 +13,11 @@ export const CHROME_GROUP_COLORS = {
   grey: "#606367",
   cyan: "#357981"
 }
+
+// Whether to display additional results when:
+// 1. Tag mode is false
+// 2. Search result length is less than 3
+export const DISPLAY_OTHER_RESULTS = false
+
+// additional results length
+export const ADDITIONAL_RESULTS_LENGTH = 3

@@ -2,7 +2,12 @@ import cls from "classnames"
 import React, { memo, useEffect, useRef } from "react"
 import IncognitoIcon from "react:~/assets/incognito.svg"
 
-import { corsTranslate, getFaviconUrl, getLastActiveTimeString } from "~/utils"
+import {
+  corsTranslate,
+  getFaviconUrl,
+  getLastActiveTimeString,
+  processDomain
+} from "~/utils"
 import { CHROME_GROUP_COLORS } from "~constants"
 import type { Action } from "~types"
 
@@ -10,15 +15,18 @@ type ItemProps = {
   isActive: boolean
   onClick: () => void
   style?: any
+  isTagMode?: boolean
   enterText: React.ReactNode
 } & Action
 const Item = memo(
   ({
     isActive,
+    isTagMode = false,
     title,
     desc,
     url,
     lastActiveTime,
+    lastVisitTime,
     domain,
     discarded,
     onClick,
@@ -27,10 +35,12 @@ const Item = memo(
     groupColor,
     enterText,
     incognito,
-    CustomIcon
+    CustomIcon,
+    action
   }: ItemProps) => {
-    const lastText = getLastActiveTimeString(lastActiveTime)
+    const lastText = getLastActiveTimeString(lastActiveTime || lastVisitTime)
     // const domain = url ? new URL(url)?.hostname : null
+    domain = domain || processDomain(url)
     let tmpDesc = corsTranslate(desc)
     if ((!desc || desc === "Chrome tab" || desc === "Bookmark") && domain) {
       tmpDesc = domain
@@ -47,8 +57,11 @@ const Item = memo(
     }, [isActive])
     // utils.js
 
+    //display tag if action is history or bookmark
+    const isDisplayTypeTag =
+      !isTagMode && (action === "history" || action === "bookmark")
     // const finallyDesc = lastText ? `${tmpDesc} • ${lastText}` : tmpDesc
-    const finallyDesc = [groupTitle, tmpDesc, lastText].filter((i) => i)
+    const finallyDesc = [groupTitle, tmpDesc, lastText].filter(Boolean)
     return (
       <>
         <div
@@ -92,6 +105,12 @@ const Item = memo(
               {title}
             </div>
             <div className="text-text3 dark:text-text3Dark  text-sm whitespace-nowrap overflow-hidden overflow-ellipsis flex items-center gap-2 max-w-md">
+              {isDisplayTypeTag && (
+                <span className="font-medium text-sky-600">
+                  {action.charAt(0).toUpperCase() + action.slice(1)}
+                  <span className="font-normal"> • </span>
+                </span>
+              )}
               {incognito && (
                 <IncognitoIcon
                   width={16}

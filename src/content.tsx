@@ -12,14 +12,20 @@ import {
 } from "react"
 import { List } from "react-virtualized"
 import AiIcon from "react:~/assets/ai.svg"
+import Logo from "react:~/assets/icon.svg"
 
 import TagInputField from "~components/Input"
 import Item from "~components/Item"
 import PreItem from "~components/Item/PreItem"
 import KeyTag from "~components/KeyTag"
-import { aiKey, tagKeys, TagStartKey } from "~constants"
+import {
+  ADDITIONAL_RESULTS_LENGTH,
+  aiKey,
+  tagKeys,
+  TagStartKey
+} from "~constants"
 import type { Action } from "~types"
-import { processDomain, processDomains } from "~utils"
+import { processDomain, processDomains, promisify } from "~utils"
 
 export const getStyle: PlasmoGetStyle = () => {
   const style = document.createElement("style")
@@ -38,6 +44,7 @@ function Content() {
   const [trieData, setTrieData] = useState([])
   const [InputDisabled, setInputDisabled] = useState(false)
   const [shortcuts, setShortcuts] = useState([])
+  const [filteredActions, setFilteredActions] = useState([])
 
   const isTagMode = useMemo(
     () => tags.some((tag) => tagKeys.includes(tag)),
@@ -81,32 +88,18 @@ function Content() {
       </span>
     )
   }, [shortcuts, InputDisabled])
-  const filteredActions = useMemo(() => {
-    if (isTagMode) return originActions
-    if (searchValue.length > 0) {
-      const value = searchValue.toLowerCase()
-      return originActions.filter((action) => {
-        if (!action) return false
-        return (
-          // action.desc.toLowerCase().includes(value) ||
-          action.url?.toLowerCase().includes(value) ||
-          action.title?.toLowerCase().includes(value)
-        )
-      })
-    } else {
-      return originActions
-    }
-  }, [originActions, searchValue, isTagMode])
-  useWhyDidYouUpdate("Content", {
-    isOpen,
-    originActions,
-    filteredActions,
-    searchValue,
-    keyStates,
-    tags,
-    isTagMode,
-    trieData
-  })
+
+  // useWhyDidYouUpdate("Content", {
+  //   isOpen,
+  //   originActions,
+  //   filteredActions,
+  //   searchValue,
+  //   keyStates,
+  //   tags,
+  //   isTagMode,
+  //   trieData
+  // })
+
   const open = useCallback(
     (needReset = false, isCycle = false) => {
       !isOpen &&
@@ -144,7 +137,6 @@ function Content() {
     }
 
     const action = filteredActions[index]
-    console.log("handleAction", action)
 
     if (action.type === "ai") {
       setOriginActions([
@@ -212,8 +204,6 @@ function Content() {
       chrome.runtime.sendMessage(
         { request: "search-bookmarks", query: searchValue },
         (response) => {
-          console.log(response.data)
-
           setOriginActions(response.data)
           !deferredIsTagMode && setTrieData(processDomains(response.data))
         }
@@ -260,6 +250,56 @@ function Content() {
       setShortcuts(response.data)
     })
   }, [])
+
+  //filter
+  useEffect(() => {
+    const fetchFilteredActions = async () => {
+      if (isTagMode) {
+        setFilteredActions(originActions)
+        return
+      }
+
+      if (searchValue.length > 0) {
+        const value = searchValue.toLowerCase()
+        let _filteredActions = originActions.filter((action) => {
+          if (!action) return false
+          return (
+            action.url?.toLowerCase().includes(value) ||
+            action.title?.toLowerCase().includes(value)
+          )
+        })
+
+        if (_filteredActions.length < 3) {
+          const sendMessagePromise = promisify(chrome.runtime.sendMessage)
+          try {
+            const historyResponse = await sendMessagePromise({
+              request: "search-history",
+              query: searchValue
+            })
+            const bookmarkResponse = await sendMessagePromise({
+              request: "search-bookmarks",
+              query: searchValue
+            })
+
+            setFilteredActions([
+              ..._filteredActions,
+              ...historyResponse.data.slice(0, ADDITIONAL_RESULTS_LENGTH),
+              ...bookmarkResponse.data.slice(0, ADDITIONAL_RESULTS_LENGTH)
+            ])
+          } catch (error) {
+            console.error("Error fetching additional data:", error)
+            setFilteredActions(_filteredActions)
+          }
+        } else {
+          setFilteredActions(_filteredActions)
+        }
+      } else {
+        setFilteredActions(originActions)
+      }
+    }
+
+    fetchFilteredActions()
+  }, [originActions, searchValue, isTagMode])
 
   useEffect(() => {
     const messageHandler = (message) => {
@@ -387,8 +427,8 @@ function Content() {
         style={style}
         enterText={enterText}
         key={key || action.id || action.desc}
+        isTagMode
         {...action}
-        domain={processDomain(action.url)}
       />
     ) : (
       <PreItem style={style} />
@@ -457,7 +497,8 @@ function Content() {
               className="h-12 text-sm leading-12 border-t border-border dark:border-borderDark w-full px-6 mr-auto flex items-center justify-between">
               <div
                 id="pivoto-results"
-                className="text-text3 dark:text-text3Dark  font-medium">
+                className="text-text3 dark:text-text3Dark  font-medium flex items-center gap-2">
+                <Logo height={16} />
                 {filteredActions.length} results
               </div>
               {navigateText}
