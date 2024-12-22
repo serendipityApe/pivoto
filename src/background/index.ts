@@ -1,3 +1,5 @@
+import { promisify } from "~utils"
+
 export {}
 
 const browserAction =
@@ -888,6 +890,117 @@ function apiCallProcessor(data: any) {
     }
   }
 }
+type Path = string | (string | number)[]
+
+function get<T>(
+  obj: Record<string | number, any>,
+  path: Path,
+  defaultValue: T = undefined as T
+): T {
+  if (!obj || (typeof obj !== "object" && typeof obj !== "function")) {
+    return defaultValue
+  }
+
+  const pathArray = Array.isArray(path) ? path : path.split(".")
+  let result: any = obj
+
+  for (let i = 0; i < pathArray.length; i++) {
+    const key = pathArray[i]
+    if (result && typeof result === "object" && key in result) {
+      result = result[key]
+    } else {
+      return defaultValue
+    }
+  }
+
+  return result ?? defaultValue
+}
+function compose(...funcs: Function[]) {
+  return funcs.reduceRight((a, b) => async (...args: any[]) => {
+    const result = await b(...args)
+    return a(result)
+  })
+}
+const dealWithNativeParam = (nativeParam: string, args: any[]) => {
+  if (typeof nativeParam === "string" && nativeParam.includes("${args_")) {
+    if (/^\${args_(\d+)}$/.test(nativeParam)) {
+      return args[parseInt(nativeParam.match(/\d+/)[0])]
+    } else {
+      return nativeParam.replace(/\${args_(\d+)}/g, (match, index) => {
+        const argIndex = parseInt(index, 10)
+        return args[argIndex] !== undefined ? args[argIndex] : match
+      })
+    }
+  } else {
+    return nativeParam
+  }
+}
+const genThunk = (callFunctions) => {
+  function _genThunk(callFunction) {
+    console.log(callFunction, "callFunction")
+    let obj = callFunction
+    const functionArgs = JSON.parse(obj.function.arguments)
+    if (obj.function.name.startsWith("chrome_")) {
+      let groupName = obj.function.name.split("_")[1]
+      let functionName = functionArgs.method
+      console.log(groupName, functionName, browserInstance[groupName])
+
+      if (
+        browserInstance[groupName] &&
+        typeof browserInstance[groupName][functionName] === "function"
+      ) {
+        console.log(browserInstance[groupName][functionName], "browserInstance")
+        let nativeFunction = promisify(browserInstance[groupName][functionName])
+        return async function (...args: any[]) {
+          console.log(args, "args")
+
+          const _genNativeParam = (nativeParam) => {
+            if (nativeParam === null) {
+              console.log("nativeParam is null")
+            }
+            if (typeof nativeParam === "string") {
+              return dealWithNativeParam(nativeParam, args)
+            }
+            if (Array.isArray(nativeParam)) {
+              return nativeParam.map((item) => _genNativeParam(item))
+            }
+            if (typeof nativeParam === "object" && nativeParam !== null) {
+              Object.entries(nativeParam).forEach(([key, value]) => {
+                nativeParam[key] = _genNativeParam(value)
+              })
+            }
+            return nativeParam
+          }
+          const nativeParams = functionArgs.params.map(
+            _genNativeParam
+          ) as Array<Record<string, string | string[]> | string>
+          console.log(nativeParams, functionArgs.params, "nativeParam")
+          // 替换 param1 中的占位符 ${args_0} 为实际的参数 args[0]，${args_1} 为 args[1]，等等
+
+          let result = await nativeFunction.apply(this, nativeParams)
+          if (functionArgs.callbackParam) {
+            console.log(get(result, functionArgs.callbackParam), "1111")
+            return get(result, functionArgs.callbackParam)
+          } else {
+            console.log(result, "1111")
+            return result
+          }
+        }
+        return browserInstance[groupName][functionName].bind(this, [
+          functionArgs.param1,
+          (result) => {
+            if (functionArgs.callbackParam) {
+              get(result, functionArgs.callbackParam)
+            } else {
+              return result
+            }
+          }
+        ])
+      }
+    }
+  }
+  return callFunctions.map(_genThunk)
+}
 function fetchFn(content: string, callback: (result) => void) {
   fetch("http://127.0.0.1:3000/fn/calling", {
     method: "POST",
@@ -902,7 +1015,9 @@ function fetchFn(content: string, callback: (result) => void) {
     .then((result) => {
       callback(result)
       console.log(content, result, "rrrrrr")
-      apiCallProcessor(JSON.parse(result)[0])
+      const callFunctions = JSON.parse(result)
+      const thunks = genThunk(callFunctions)
+      compose(...thunks)()
     })
     .catch((error) => console.log("error", error))
 }
