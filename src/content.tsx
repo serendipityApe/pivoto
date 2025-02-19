@@ -249,7 +249,14 @@ function Content() {
             type: "search",
             url: "https://www.google.com/chrome/"
           },
-          ...response.actions
+          // set default action title
+          ...response.actions.map((action) => {
+            if (action.title) return action
+            return {
+              ...action,
+              title: searchValue
+            }
+          })
         ]
         setOriginActions(actions)
         setTrieData([
