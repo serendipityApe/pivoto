@@ -36,6 +36,7 @@ const Item = memo(
     enterText,
     incognito,
     CustomIcon,
+    favIconUrl,
     action
   }: ItemProps) => {
     const lastText = getLastActiveTimeString(lastActiveTime || lastVisitTime)
@@ -91,7 +92,7 @@ const Item = memo(
                 CustomIcon
               ) : (
                 <img
-                  src={getFaviconUrl(url)}
+                  src={favIconUrl || getFaviconUrl(url)}
                   alt="favicon"
                   className={cls("w-5 h-5", {
                     "w-3 h-3 rounded-full overflow-hidden": discarded
@@ -101,10 +102,10 @@ const Item = memo(
             </span>
           </span>
           <div className="ml-4 h-12 text-left flex-1 flex flex-col justify-between">
-            <div className="text-text2 dark:text-text2Dark  text-base font-medium whitespace-nowrap overflow-hidden overflow-ellipsis max-w-md">
+            <div className="text-text2 dark:text-text2Dark  text-base font-medium whitespace-nowrap overflow-hidden overflow-ellipsis max-w-[450px]">
               {title}
             </div>
-            <div className="text-text3 dark:text-text3Dark  text-sm whitespace-nowrap overflow-hidden overflow-ellipsis flex items-center gap-2 max-w-md">
+            <div className="text-text3 dark:text-text3Dark  text-sm whitespace-nowrap overflow-hidden overflow-ellipsis flex items-center gap-2 max-w-[450px]">
               {isDisplayTypeTag && (
                 <span className="font-medium text-sky-600">
                   {action.charAt(0).toUpperCase() + action.slice(1)}

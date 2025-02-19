@@ -263,7 +263,31 @@ browserInstance.runtime.onInstalled.addListener((object) => {
   )
 
   if (object.reason === "install") {
-    browserInstance.tabs.create({ url: "https://alyssax.com/pivoto/" })
+    browserInstance.tabs.create({
+      url: "https://github.com/serendipityApe/pivoto"
+    })
+    // Define default configuration
+    // const defaultConfig = {
+    //   specialSearch: [
+    //     {
+    //       id: "default",
+    //       description: "Search in chrome",
+    //       url: "https://www.google.com/chrome/"
+    //     }
+    //   ]
+    // }
+
+    // // Set default configuration in storage
+    // chrome.storage.local.set(defaultConfig, () => {
+    //   if (chrome.runtime.lastError) {
+    //     console.error(
+    //       "Error setting default storage:",
+    //       chrome.runtime.lastError
+    //     )
+    //   } else {
+    //     console.log("Default storage set successfully.")
+    //   }
+    // })
   }
 })
 
@@ -405,8 +429,8 @@ const getTabs = async () => {
       domain: domain,
       ...obj
     }
-    if (groups.length && tab.groupId != "-1") {
-      let group = groups.find((group) => group.id === tab.groupId)
+    if (groups.length && tab?.groupId != "-1") {
+      let group = groups.find((group) => group.id === tab?.groupId)
       if (group) {
         _obj.groupTitle = group.title
         _obj.groupColor = group.color
@@ -418,21 +442,6 @@ const getTabs = async () => {
       return { ...tab, ..._obj }
     }
   }
-
-  let result = await storage.get(["specialSearch"])
-  let specialSearch = result?.specialSearch || []
-  specialSearch = specialSearch.filter((item) => isValidUrl(item.searchUrl))
-  specialSearch.map((item) => {
-    const tempURL = new URL(item.searchUrl)
-    return injectTab(item, true, {
-      ...item,
-      type: "action",
-      action: "search",
-      favIconUrl: getFavicon(tempURL?.host || tempURL?.origin),
-      keycheck: false
-    })
-  })
-  actions = specialSearch.concat(actions)
 
   let tabs = (await browserInstance.tabs.query({})) as chrome.tabs.Tab[]
   // console.log('before get tabs',tabs)
@@ -482,6 +491,7 @@ const getTabs = async () => {
   console.log(tabs, "after tabs")
   console.log(tabHistory, "*****: tabHistory")
   actions = actions.concat(tabs)
+  console.log(actions, "action")
 }
 
 // Get bookmarks to populate in the actions
@@ -618,6 +628,25 @@ function cycleTab() {
 
   switchTab(preActiveTab)
 }
+async function getSpecialSearch(callback) {
+  let result = await storage.get(["specialSearch"])
+  let specialSearch = result?.specialSearch || []
+  specialSearch = specialSearch
+    .filter((item) => isValidUrl(item.searchUrl))
+    .map((item) => {
+      const tempURL = new URL(item.searchUrl)
+      return {
+        title: item.title,
+        desc: item.description,
+        searchUrl: item.searchUrl,
+        type: "action",
+        action: "search",
+        favIconUrl: getFavicon(tempURL?.host || tempURL?.origin),
+        keycheck: false
+      }
+    })
+  callback(specialSearch)
+}
 // Receive messages from any tab
 browserInstance.runtime.onMessage.addListener(
   (message, sender, sendResponse) => {
@@ -634,6 +663,14 @@ browserInstance.runtime.onMessage.addListener(
         sendResponse({ actions: actions })
         handleBatch(resetPivoto)
         break
+      case "get-Actions": {
+        getSpecialSearch((actions) => {
+          sendResponse({ actions })
+          handleBatch(resetPivoto)
+        })
+
+        break
+      }
       case "only-open":
         sendResponse({ actions: actions })
         break
@@ -824,7 +861,11 @@ browserInstance.runtime.onMessage.addListener(
       case "search":
         const action = message.tab
         const query = message.query
-        if (action.title == "Search") {
+        if (!action.searchUrl) {
+          if (!query) {
+            chrome.tabs.create({})
+            return
+          }
           browserInstance.search.query({ text: query })
         } else {
           const { searchUrl } = action
@@ -922,11 +963,11 @@ function compose(...funcs: Function[]) {
   })
 }
 const dealWithNativeParam = (nativeParam: string, args: any[]) => {
-  if (typeof nativeParam === "string" && nativeParam.includes("${args_")) {
-    if (/^\${args_(\d+)}$/.test(nativeParam)) {
+  if (typeof nativeParam === "string" && nativeParam.includes("&{args_")) {
+    if (/^\&{args_(\d+)}$/.test(nativeParam)) {
       return args[parseInt(nativeParam.match(/\d+/)[0])]
     } else {
-      return nativeParam.replace(/\${args_(\d+)}/g, (match, index) => {
+      return nativeParam.replace(/\&{args_(\d+)}/g, (match, index) => {
         const argIndex = parseInt(index, 10)
         return args[argIndex] !== undefined ? args[argIndex] : match
       })

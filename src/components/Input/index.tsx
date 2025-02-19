@@ -9,6 +9,7 @@ import React, {
   useState
 } from "react"
 
+import KeyTag from "~components/KeyTag"
 import { tagKeys, TagStartKey } from "~constants"
 import { Trie } from "~utils/trie"
 
@@ -19,6 +20,7 @@ type TagInputFieldProps = {
   disabled?: boolean
   setTags: React.Dispatch<React.SetStateAction<string[]>>
   onChange?: (latestValue: string) => void
+  showActionsSuggestion?: boolean
 }
 const TagInputField = forwardRef<HTMLInputElement, TagInputFieldProps>(
   (props, ref) => {
@@ -28,7 +30,8 @@ const TagInputField = forwardRef<HTMLInputElement, TagInputFieldProps>(
       tags,
       setTags,
       value,
-      disabled
+      disabled,
+      showActionsSuggestion
     } = props
     const [input, setInputOrigin] = useState("")
     useEffect(() => {
@@ -123,6 +126,8 @@ const TagInputField = forwardRef<HTMLInputElement, TagInputFieldProps>(
           return "Search history"
         case "ai":
           return "Ask a question or describe your needs"
+        case "actions":
+          return "Search actions"
         default:
           return `Search tabs or type ${TagStartKey} to select a command`
       }
@@ -131,12 +136,12 @@ const TagInputField = forwardRef<HTMLInputElement, TagInputFieldProps>(
     //   setTags((prevState) => prevState.filter((tag, i) => i !== index))
     // }
     const inputCls =
-      "bg-transparent absolute outline-none text-2xl flex-grow min-w-1/2 border-0 rounded-md p-0 ml-0 font-normal h-12 w-11/12 mx-auto block text-text caret-accent font-inter box-border shadow-none"
+      "bg-transparent absolute outline-none text-2xl flex-grow min-w-1/2 border-0 rounded-md p-0 ml-0 font-normal h-12 w-3/4 mx-auto block text-text caret-accent font-inter box-border shadow-none"
     return (
       <div className="flex overflow-auto pl-6 text-black items-center border-0 border-b border-solid border-select dark:border-selectDark">
         {tags.map((tag, index) => (
           <div
-            className="flex items-center my-1 mr-2.5 py-1.5 px-2.5 font-medium rounded-lg text-sky-600 dark:text-sky-400 bg-sky-400/10 whitespace-nowrap max-h-8"
+            className="text-base flex items-center my-1 mr-2.5 py-1.5 px-2.5 font-medium rounded-lg text-sky-600 dark:text-sky-400 bg-sky-400/10 whitespace-nowrap max-h-8"
             key={index}>
             {tag}
             {/* <button onClick={() => deleteTag(index)}>x</button> */}
@@ -160,6 +165,11 @@ const TagInputField = forwardRef<HTMLInputElement, TagInputFieldProps>(
               className={cls(inputCls, "text-text3 dark:text-slate-500 -z-10")}
               value={suggestion}
             />
+          )}
+          {showActionsSuggestion && (
+            <span className="absolute right-4 text-gray-400 text-sm">
+              Search Actions <KeyTag>Tab</KeyTag>
+            </span>
           )}
         </span>
       </div>

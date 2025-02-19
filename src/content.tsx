@@ -46,9 +46,10 @@ function Content() {
   const [shortcuts, setShortcuts] = useState([])
   const [filteredActions, setFilteredActions] = useState([])
 
-  const isTagMode = useMemo(
-    () => tags.some((tag) => tagKeys.includes(tag)),
-    [tags]
+  const isTagMode = useMemo(() => tags.length > 0, [tags])
+  const canActiveActions = useMemo(
+    () => !searchValue && !isTagMode && !InputDisabled,
+    [searchValue, isTagMode, InputDisabled]
   )
   const navigateText = useMemo(() => {
     if (InputDisabled) {
@@ -238,7 +239,26 @@ function Content() {
           domain: "developer.chrome.com"
         }
       ])
+    } else if (tags.includes("actions")) {
+      chrome.runtime.sendMessage({ request: "get-Actions" }, (response) => {
+        let actions = [
+          {
+            title: searchValue || "open new tab",
+            desc: "Search in chrome",
+            action: "search",
+            type: "search",
+            url: "https://www.google.com/chrome/"
+          },
+          ...response.actions
+        ]
+        setOriginActions(actions)
+        setTrieData([
+          ...tagKeys.map((key) => TagStartKey + key),
+          ...processDomains(actions)
+        ])
+      })
     } else if (deferredIsTagMode === true && !searchValue) {
+      setActiveIndex(0)
       getActions()
     }
   }, [tags, searchValue])
@@ -360,6 +380,11 @@ function Content() {
             handleAction(activeIndex)
           }
           break
+        case "Tab": //enter search actions
+          if (isOpen && canActiveActions) {
+            setTags(["actions"])
+          }
+          break
         // case 'Backspace': // backspace key
         //   if (isOpen) {
         //     removeAction(filteredActions[activeIndex])
@@ -418,7 +443,7 @@ function Content() {
     // This must be passed through to the rendered row element.
   }) => {
     const action = originActions[index]
-    return isVisible ? (
+    return (
       <Item
         onClick={() => {
           handleAction(index)
@@ -430,8 +455,6 @@ function Content() {
         isTagMode
         {...action}
       />
-    ) : (
-      <PreItem style={style} />
     )
   }
   const isVirtualList = deferredIsTagMode || isTagMode
@@ -460,6 +483,7 @@ function Content() {
                   setSearchValue(value)
                   setActiveIndex(0)
                 }}
+                showActionsSuggestion={canActiveActions}
               />
             </div>
 
@@ -469,7 +493,7 @@ function Content() {
                 scrollToIndex={activeIndex}
                 height={400}
                 width={700}
-                rowHeight={60}
+                rowHeight={64}
                 rowCount={originActions.length}
                 rowRenderer={rowRenderer}
               />

@@ -1,9 +1,12 @@
-/** @type {import('tailwindcss').Config} */
+const { nextui } = require("@nextui-org/react")
 module.exports = {
   mode: "jit",
   darkMode: "media",
-  content: ["./**/*.tsx"],
-  plugins: [require("tailwind-scrollbar")],
+  content: [
+    "./**/*.tsx",
+    "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}"
+  ],
+  plugins: [nextui(), require("tailwind-scrollbar")],
   theme: {
     extend: {
       zIndex: {
