@@ -2,7 +2,7 @@
   "name": "pivoto",
   "displayName": "Pivoto",
   "version": "0.0.1",
-  "description": "Pivoto is a browser extension designed to transform your browsing experience, streamline tab navigation, and help you focus on the content that matters most.",
+  "description": "Pivoto is a browser extension designed to transform your browsing experience.",
   "author": "leyuan",
   "scripts": {
     "dev": "plasmo dev",
@@ -55,7 +55,7 @@
       "cycle-tab": {
         "suggested_key": {
           "default": "Ctrl+Q",
-          "mac": "Ctrl+Q"
+          "mac": "Option+Q"
         },
         "description": "back to the previous tab"
       }
@@ -72,8 +72,7 @@
       "window",
       "commands",
       "favicon",
-      "storage",
-      "http://127.0.0.1:3000"
+      "storage"
     ],
     "web_accessible_resources": [
       {
