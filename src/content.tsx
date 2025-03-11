@@ -13,6 +13,7 @@ import {
 import { List } from "react-virtualized"
 import AiIcon from "react:~/assets/ai.svg"
 
+import { useLocale } from "~/locales"
 import TagInputField from "~components/Input"
 import Item from "~components/Item"
 import PreItem from "~components/Item/PreItem"
@@ -25,6 +26,8 @@ import {
 } from "~constants"
 import type { Action } from "~types"
 import { processDomain, processDomains, promisify } from "~utils"
+
+import LocaleProvider from "./components/LocaleProvider"
 
 export const getStyle: PlasmoGetStyle = () => {
   const style = document.createElement("style")
@@ -50,6 +53,7 @@ function Content() {
     () => !searchValue && !isTagMode && !InputDisabled,
     [searchValue, isTagMode, InputDisabled]
   )
+  const { t } = useLocale()
   const navigateText = useMemo(() => {
     if (InputDisabled) {
       const shortcut = shortcuts.find((s) => s.name === "cycle-tab").shortcut
@@ -57,10 +61,10 @@ function Content() {
         <div
           id="pivoto-arrows"
           className="text-text3 dark:text-text3Dark  font-medium float-right">
-          Hold
+          {t("navigate.hold")}
           <KeyTag>{shortcut[0]}</KeyTag>
-          and press
-          <KeyTag>{shortcut[1]}</KeyTag> to navigate
+          {t("navigate.and.press")}
+          <KeyTag>{shortcut[1]}</KeyTag> {t("navigate.to.navigate")}
         </div>
       )
     }
@@ -68,26 +72,26 @@ function Content() {
       <div
         id="pivoto-arrows"
         className="text-text3 dark:text-text3Dark  font-medium float-right">
-        Use arrow keys <KeyTag>↑</KeyTag>
-        <KeyTag>↓</KeyTag> to navigate
+        {t("navigate.arrows")} <KeyTag>↑</KeyTag>
+        <KeyTag>↓</KeyTag> {t("navigate.to.navigate")}
       </div>
     )
-  }, [shortcuts, InputDisabled])
+  }, [shortcuts, InputDisabled, t])
   const enterText = useMemo(() => {
     if (InputDisabled) {
       const shortcut = shortcuts.find((s) => s.name === "cycle-tab").shortcut
       return (
         <span>
-          Release <KeyTag>{shortcut[0]}</KeyTag>
+          {t("action.release")} <KeyTag>{shortcut[0]}</KeyTag>
         </span>
       )
     }
     return (
       <span>
-        Select <KeyTag>⏎</KeyTag>
+        {t("action.select")} <KeyTag>⏎</KeyTag>
       </span>
     )
-  }, [shortcuts, InputDisabled])
+  }, [shortcuts, InputDisabled, t])
 
   // useWhyDidYouUpdate("Content", {
   //   isOpen,
@@ -143,8 +147,8 @@ function Content() {
         {
           favIconUrl:
             "https://www.gstatic.com/devrel-devsite/prod/v5ba20c1e081870fd30b7c8ebfa8711369a575956c1f44323664285c05468c6a4/chrome/images/favicon.png",
-          title: "Loading ai command suggestions...",
-          // desc: "Request used: 1 / 100",
+          title: t("ai.loading"),
+          // desc: t('ai.request.used'),
           // url: "https://chat.openai.com/",
           type: "ai",
           domain: "developer.chrome.com"
@@ -220,8 +224,8 @@ function Content() {
       setOriginActions([
         {
           CustomIcon: <AiIcon className="w-6 h-6" />,
-          title: "Execute ai command suggestions",
-          // desc: "Request used: 1 / 100",
+          title: t("ai.execute"),
+          // desc: t('ai.request.used'),
           // url: "https://chat.openai.com/",
           action: "ai-command",
           type: "ai",
@@ -230,8 +234,8 @@ function Content() {
         {
           favIconUrl:
             "https://www.gstatic.com/devrel-devsite/prod/v5ba20c1e081870fd30b7c8ebfa8711369a575956c1f44323664285c05468c6a4/chrome/images/favicon.png",
-          title: "Ask chatgpt4",
-          desc: "Request used: 1 / 100",
+          title: t("ai.ask"),
+          desc: t("ai.request.used"),
           url: "https://chat.openai.com/",
           action: "switch-tab",
           type: "ai",
@@ -242,8 +246,8 @@ function Content() {
       chrome.runtime.sendMessage({ request: "get-Actions" }, (response) => {
         let actions = [
           {
-            title: searchValue || "open new tab",
-            desc: "Search in chrome",
+            title: searchValue || t("action.open.new.tab"),
+            desc: t("action.search.in.chrome"),
             action: "search",
             type: "search",
             url: "https://www.google.com/chrome/"
@@ -465,7 +469,7 @@ function Content() {
   }
   const isVirtualList = deferredIsTagMode || isTagMode
   return (
-    <>
+    <LocaleProvider>
       <div
         id="pivoto-extension"
         className={cls("block", {
@@ -537,7 +541,7 @@ function Content() {
                     <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />
                   </svg>
                 </span>
-                {filteredActions.length} results
+                {filteredActions.length} {t("results.count")}
               </div>
               {navigateText}
             </div>
@@ -555,7 +559,7 @@ function Content() {
         <img src="" />
         <span>The action has been successful</span>
       </div> */}
-    </>
+    </LocaleProvider>
   )
 }
 

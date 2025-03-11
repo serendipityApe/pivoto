@@ -5,6 +5,8 @@ import "./styles/index.css"
 
 import { cn, Listbox, ListboxItem, ListboxSection } from "@nextui-org/react"
 
+import LocaleProvider from "./components/LocaleProvider"
+
 export const AddNoteIcon = (props) => {
   return (
     <svg
@@ -143,44 +145,47 @@ function IndexPopup() {
     "text-xl text-default-500 pointer-events-none flex-shrink-0"
 
   return (
-    <NextUIProvider>
-      <div className="flex items-center relative">
-        <ListboxWrapper>
-          <Listbox aria-label="Listbox menu with sections" variant="flat">
-            <ListboxSection>
-              <ListboxItem
-                key="new"
-                onPress={() => {
-                  if (chrome.runtime.openOptionsPage) {
-                    chrome.runtime.openOptionsPage()
-                  } else {
-                    window.open(chrome.runtime.getURL("options.html"))
-                  }
-                }}
-                description="Customize your preferences"
-                startContent={<SettingDocumentIcon className={iconClasses} />}>
-                Settings
-              </ListboxItem>
-              <ListboxItem
-                key="copy"
-                description="View recent updates"
-                startContent={<AddNoteIcon className={iconClasses} />}>
-                Changelogs
-              </ListboxItem>
-              <ListboxItem
-                key="edit"
-                description="Find answers to common questions"
-                startContent={<CopyDocumentIcon className={iconClasses} />}>
-                FAQ
-              </ListboxItem>
-              <ListboxItem
-                key="edit"
-                description="Submit your suggestions"
-                startContent={<EditDocumentIcon className={iconClasses} />}>
-                Feedback
-              </ListboxItem>
-            </ListboxSection>
-            {/* <ListboxSection title="Danger zone">
+    <LocaleProvider>
+      <NextUIProvider>
+        <div className="flex items-center relative">
+          <ListboxWrapper>
+            <Listbox aria-label="Listbox menu with sections" variant="flat">
+              <ListboxSection>
+                <ListboxItem
+                  key="new"
+                  onPress={() => {
+                    if (chrome.runtime.openOptionsPage) {
+                      chrome.runtime.openOptionsPage()
+                    } else {
+                      window.open(chrome.runtime.getURL("options.html"))
+                    }
+                  }}
+                  description="Customize your preferences"
+                  startContent={
+                    <SettingDocumentIcon className={iconClasses} />
+                  }>
+                  Settings
+                </ListboxItem>
+                <ListboxItem
+                  key="copy"
+                  description="View recent updates"
+                  startContent={<AddNoteIcon className={iconClasses} />}>
+                  Changelogs
+                </ListboxItem>
+                <ListboxItem
+                  key="edit"
+                  description="Find answers to common questions"
+                  startContent={<CopyDocumentIcon className={iconClasses} />}>
+                  FAQ
+                </ListboxItem>
+                <ListboxItem
+                  key="edit"
+                  description="Submit your suggestions"
+                  startContent={<EditDocumentIcon className={iconClasses} />}>
+                  Feedback
+                </ListboxItem>
+              </ListboxSection>
+              {/* <ListboxSection title="Danger zone">
               <ListboxItem
                 key="delete"
                 className="text-danger"
@@ -194,10 +199,11 @@ function IndexPopup() {
                 Delete file
               </ListboxItem>
             </ListboxSection> */}
-          </Listbox>
-        </ListboxWrapper>
-      </div>
-    </NextUIProvider>
+            </Listbox>
+          </ListboxWrapper>
+        </div>
+      </NextUIProvider>
+    </LocaleProvider>
   )
 }
 

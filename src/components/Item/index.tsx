@@ -1,6 +1,7 @@
 import cls from "classnames"
 import React, { memo, useEffect, useRef } from "react"
 import IncognitoIcon from "react:~/assets/incognito.svg"
+import { useLocale } from "~/locales"
 
 import {
   corsTranslate,
@@ -39,6 +40,7 @@ const Item = memo(
     favIconUrl,
     action
   }: ItemProps) => {
+    const { t } = useLocale();
     const lastText = getLastActiveTimeString(lastActiveTime || lastVisitTime)
     // const domain = url ? new URL(url)?.hostname : null
     domain = domain || processDomain(url)
@@ -108,7 +110,7 @@ const Item = memo(
             <div className="text-text3 dark:text-text3Dark  text-sm whitespace-nowrap overflow-hidden overflow-ellipsis flex items-center gap-2 max-w-[450px]">
               {isDisplayTypeTag && (
                 <span className="font-medium text-sky-600">
-                  {action.charAt(0).toUpperCase() + action.slice(1)}
+                  {t(`action.type.${action}`)}
                   <span className="font-normal"> • </span>
                 </span>
               )}

@@ -26,6 +26,7 @@ import React, { useEffect, useMemo, useState } from "react"
 import { v4 as uuidv4 } from "uuid"
 
 import "./styles/index.css"
+import LocaleProvider from "./components/LocaleProvider"
 
 export const DeleteIcon = (props) => {
   return (
@@ -234,7 +235,8 @@ export default function App() {
     getStorage()
   }, [])
   return (
-    <NextUIProvider>
+    <LocaleProvider>
+      <NextUIProvider>
       <div className="px-40 py-4">
         <Accordion
           variant="splitted"
@@ -390,6 +392,7 @@ export default function App() {
           </ModalContent>
         </Modal>
       </div>
-    </NextUIProvider>
+      </NextUIProvider>
+    </LocaleProvider>
   )
 }

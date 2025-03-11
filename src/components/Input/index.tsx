@@ -11,6 +11,7 @@ import React, {
 
 import KeyTag from "~components/KeyTag"
 import { tagKeys, TagStartKey } from "~constants"
+import { useLocale } from "~/locales"
 import { Trie } from "~utils/trie"
 
 type TagInputFieldProps = {
@@ -117,21 +118,22 @@ const TagInputField = forwardRef<HTMLInputElement, TagInputFieldProps>(
     const onKeyUp = () => {
       setIsKeyReleased(true)
     }
+    const { t } = useLocale();
     const placeholderText = useMemo(() => {
-      if (disabled) return "Disabled input"
+      if (disabled) return t('input.disabled')
       switch (tags[0]) {
         case "bookmark":
-          return "Search bookmarks"
+          return t('input.search.bookmarks')
         case "history":
-          return "Search history"
+          return t('input.search.history')
         case "ai":
-          return "Ask a question or describe your needs"
+          return t('input.search.ai')
         case "actions":
-          return "Search actions"
+          return t('input.search.actions')
         default:
-          return `Search tabs or type ${TagStartKey} to select a command`
+          return t('input.search.default').replace('@', TagStartKey)
       }
-    }, [tags, disabled])
+    }, [tags, disabled, t])
     // const deleteTag = (index) => {
     //   setTags((prevState) => prevState.filter((tag, i) => i !== index))
     // }
@@ -168,7 +170,7 @@ const TagInputField = forwardRef<HTMLInputElement, TagInputFieldProps>(
           )}
           {showActionsSuggestion && (
             <span className="absolute right-4 text-gray-400 text-sm">
-              Search Actions <KeyTag>Tab</KeyTag>
+              {t('search.actions')} <KeyTag>Tab</KeyTag>
             </span>
           )}
         </span>
