@@ -1,4 +1,4 @@
-export const tagKeys = ["ai", "history", "bookmark"]
+export const tagKeys = ["history", "bookmark"]
 export const TagStartKey = "@"
 export const aiKey = "#"
 

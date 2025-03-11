@@ -141,7 +141,7 @@ const TagInputField = forwardRef<HTMLInputElement, TagInputFieldProps>(
       <div className="flex overflow-auto pl-6 text-black items-center border-0 border-b border-solid border-select dark:border-selectDark">
         {tags.map((tag, index) => (
           <div
-            className="text-base flex items-center my-1 mr-2.5 py-1.5 px-2.5 font-medium rounded-lg text-sky-600 dark:text-sky-400 bg-sky-400/10 whitespace-nowrap max-h-8"
+            className="text-base flex items-center my-1 mr-2.5 py-1.5 px-2.5 font-medium rounded-lg text-sky-600 dark:text-purple-400 bg-sky-400/10 dark:bg-purple-400/10 whitespace-nowrap max-h-8"
             key={index}>
             {tag}
             {/* <button onClick={() => deleteTag(index)}>x</button> */}

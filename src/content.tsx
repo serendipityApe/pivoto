@@ -12,7 +12,6 @@ import {
 } from "react"
 import { List } from "react-virtualized"
 import AiIcon from "react:~/assets/ai.svg"
-import Logo from "react:~/assets/icon.svg"
 
 import TagInputField from "~components/Input"
 import Item from "~components/Item"
@@ -529,7 +528,15 @@ function Content() {
               <div
                 id="pivoto-results"
                 className="text-text3 dark:text-text3Dark  font-medium flex items-center gap-2">
-                <Logo height={16} />
+                <span className="dark:text-purple-400 text-sky-400">
+                  <svg
+                    className="w-4 h-4 "
+                    viewBox="0 0 24 24"
+                    height={16}
+                    fill="currentColor">
+                    <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />
+                  </svg>
+                </span>
                 {filteredActions.length} results
               </div>
               {navigateText}

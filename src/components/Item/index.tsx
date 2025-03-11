@@ -72,7 +72,7 @@ const Item = memo(
           className={cls(
             "h-16 w-full flex items-center cursor-pointer hover:bg-preSelect hover:dark:bg-preSelectDark",
             {
-              "bg-select dark:bg-selectDark relative before:h-full before:absolute before:block before:w-1 before:bg-sky-500 dark:before:bg-sky-600":
+              "bg-select dark:bg-selectDark relative before:h-full before:absolute before:block before:w-1 before:bg-sky-500 dark:before:bg-purple-600":
                 isActive
             }
           )}
