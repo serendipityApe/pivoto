@@ -34,12 +34,16 @@ export const getStyle: PlasmoGetStyle = () => {
   style.textContent = tailText
   return style
 }
-function ContentInner() {
+export function ContentInner({
+  initialOpen = false
+}: {
+  initialOpen?: boolean
+}) {
   const isAltTimer = useRef(null)
 
   const [keyStates, setKeyStates] = useState({})
   const [originActions, setOriginActions] = useState<Action[]>([])
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(initialOpen)
   const [activeIndex, setActiveIndex] = useState(0)
   const [searchValue, setSearchValue] = useState("")
   const [tags, setTags] = useState([])
