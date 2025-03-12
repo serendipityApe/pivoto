@@ -34,7 +34,7 @@ export const getStyle: PlasmoGetStyle = () => {
   style.textContent = tailText
   return style
 }
-function Content() {
+function ContentInner() {
   const isAltTimer = useRef(null)
 
   const [keyStates, setKeyStates] = useState({})
@@ -534,11 +534,20 @@ function Content() {
                 className="text-text3 dark:text-text3Dark  font-medium flex items-center gap-2">
                 <span className="dark:text-purple-400 text-sky-400">
                   <svg
-                    className="w-4 h-4 "
+                    className="w-4 h-4"
                     viewBox="0 0 24 24"
                     height={16}
                     fill="currentColor">
-                    <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />
+                    <defs>
+                      <mask id="circle-mask">
+                        <rect width="24" height="24" fill="white" />
+                        <circle cx="12" cy="12" r="3" fill="black" />
+                      </mask>
+                    </defs>
+
+                    <g mask="url(#circle-mask)">
+                      <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />
+                    </g>
                   </svg>
                 </span>
                 {filteredActions.length} {t("results.count")}
@@ -563,4 +572,10 @@ function Content() {
   )
 }
 
-export default Content
+export default function Content() {
+  return (
+    <LocaleProvider>
+      <ContentInner />
+    </LocaleProvider>
+  )
+}

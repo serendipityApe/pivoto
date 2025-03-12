@@ -60,7 +60,7 @@ export const translations: Record<Language, Translations> = {
     // Navigation and UI elements
     "navigate.arrows": "使用方向键",
     "navigate.hold": "按住",
-    "navigate.and.press": "并按",
+    "navigate.and.press": "并点按",
     "navigate.to.navigate": "进行导航",
     "action.select": "选择",
     "action.release": "释放",
