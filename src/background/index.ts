@@ -37,15 +37,59 @@ type TabHistoryItem = {
 }
 let tabHistory: TabHistoryItem[] = []
 
+const isChrome121OrAbove = (() => {
+  try {
+    const userAgent = navigator.userAgent
+    const chromeMatch = userAgent.match(/Chrome\/(\d+)/)
+    if (chromeMatch && process.env.PLASMO_BROWSER !== "firefox") {
+      const version = parseInt(chromeMatch[1], 10)
+      return version >= 121
+    }
+    return false
+  } catch (e) {
+    return false
+  }
+})()
+
 /** 
 	@param	
 	@return: null | typeof tabHistory[number]
 */
 function getPreActiveTab() {
+  // 如果是Chrome 121+，使用原生API获取最近访问的标签页
+  if (isChrome121OrAbove) {
+    return new Promise((resolve) => {
+      browserInstance.tabs.query({}, (tabs) => {
+        // 按lastAccessed降序排序，获取当前标签页之外的最近访问标签页
+        const sortedTabs = tabs.sort(
+          (a, b) => (b.lastAccessed || 0) - (a.lastAccessed || 0)
+        )
+
+        // 获取当前标签页
+        browserInstance.tabs.query(
+          { active: true, currentWindow: true },
+          ([currentTab]) => {
+            // 找到第一个不是当前标签页的标签
+            const preActiveTab = sortedTabs.find(
+              (tab) => tab.id !== currentTab.id
+            )
+            resolve(preActiveTab || null)
+          }
+        )
+      })
+    })
+  }
+
+  // 使用原有的tabHistory逻辑
   let l = tabHistory.length
   if (l < 2) return null
   let preActiveTab = tabHistory[l - 2]
   return preActiveTab
+}
+
+// 修改为支持异步的函数
+async function getPreActiveTabAsync(): Promise<TabHistoryItem> {
+  return (await getPreActiveTab()) as TabHistoryItem
 }
 function generateHistoryTab(tab, override = {}): TabHistoryItem {
   let { id, windowId, index } = tab
@@ -65,39 +109,53 @@ function isValidUrl(url) {
     return false
   }
 }
-browserInstance.windows.onFocusChanged.addListener(function (windowId) {
-  if (windowId === -1) return
-  if (tabHistory[tabHistory.length - 1]?.windowId !== windowId) {
-    let targetTab = null
-    const index = tabHistory.findLastIndex((item) => {
-      if (item.windowId === windowId) {
-        targetTab = item
-        return true
+if (!isChrome121OrAbove) {
+  browserInstance.windows.onFocusChanged.addListener(function (windowId) {
+    if (windowId === -1) return
+    if (tabHistory[tabHistory.length - 1]?.windowId !== windowId) {
+      let targetTab = null
+      const index = tabHistory.findLastIndex((item) => {
+        if (item.windowId === windowId) {
+          targetTab = item
+          return true
+        }
+      })
+      if (index !== -1) {
+        tabHistory.splice(index, 1)
+        tabHistory.push({ ...targetTab, lastActiveTime: Date.now() })
       }
-    })
-    if (index !== -1) {
-      tabHistory.splice(index, 1)
-      tabHistory.push({ ...targetTab, lastActiveTime: Date.now() })
     }
-  }
-  handleBatch(resetPivoto)
-})
-browserInstance.windows.onRemoved.addListener(function (windowId) {
-  // Handle the window close event here
-  tabHistory = tabHistory.filter((tab) => tab.windowId != windowId)
-})
-browserInstance.tabs.onActivated.addListener(async function (activeInfo) {
-  handleBatch(resetPivoto)
-})
-function tabRemoveHandler(tabId, removeInfo) {
-  const { windowId } = removeInfo
-  const index = tabHistory.findIndex((item) => item.id === tabId)
-  if (index !== -1) {
-    tabHistory.splice(index, 1)
-  }
-  handleBatch(resetPivoto)
+    handleBatch(resetPivoto)
+  })
+  browserInstance.windows.onRemoved.addListener(function (windowId) {
+    // Handle the window close event here
+    tabHistory = tabHistory.filter((tab) => tab.windowId != windowId)
+  })
+  browserInstance.tabs.onActivated.addListener(async function (activeInfo) {
+    handleBatch(resetPivoto)
+  })
+  browserInstance.tabs.onRemoved.addListener(
+    function tabRemoveHandler(tabId, removeInfo) {
+      const { windowId } = removeInfo
+      const index = tabHistory.findIndex((item) => item.id === tabId)
+      if (index !== -1) {
+        tabHistory.splice(index, 1)
+      }
+      handleBatch(resetPivoto)
+    }
+  )
+} else {
+  browserInstance.tabs.onActivated.addListener(async function () {
+    handleBatch(resetPivoto)
+  })
+  browserInstance.windows.onFocusChanged.addListener(function (windowId) {
+    if (windowId === -1) return
+    handleBatch(resetPivoto)
+  })
+  browserInstance.tabs.onRemoved.addListener(function tabRemoveHandler() {
+    handleBatch(resetPivoto)
+  })
 }
-browserInstance.tabs.onRemoved.addListener(tabRemoveHandler)
 
 // Clear actions and append default ones
 const clearActions = async () => {
@@ -298,7 +356,7 @@ browserInstance.commands.onCommand.addListener(async (command) => {
     getCurrentTab().then((response) => {
       if (
         !response.url.includes("chrome://") &&
-        !response.url.includes("browserInstance.google.com")
+        !response.url.includes("chrome.google.com")
       ) {
         browserInstance.tabs.sendMessage(response.id, {
           request: "open-pivoto"
@@ -306,7 +364,7 @@ browserInstance.commands.onCommand.addListener(async (command) => {
       } else {
         browserInstance.tabs
           .create({
-            url: "./newtab.html"
+            url: "./tabs/blocktab.html"
           })
           .then(() => {
             newtaburl = response.url
@@ -316,14 +374,14 @@ browserInstance.commands.onCommand.addListener(async (command) => {
     })
   }
   if (command === "cycle-tab") {
-    let preActiveTab = getPreActiveTab()
+    let preActiveTab = await getPreActiveTabAsync()
     if (!preActiveTab) return
     let currentTab = await getCurrentTab()
     try {
       //wether call switchTab directly
       if (
         !currentTab.url.includes("chrome://") &&
-        !currentTab.url.includes("browserInstance.google.com")
+        !currentTab.url.includes("chrome.google.com")
       ) {
         browserInstance.scripting.executeScript(
           {
@@ -437,52 +495,74 @@ const getTabs = async () => {
   }
 
   let tabs = (await browserInstance.tabs.query({})) as chrome.tabs.Tab[]
-  // console.log('before get tabs',tabs)
-  tabs.map((tab) => {
-    let tabH = tabHistory.find((tabH) => tab.id == tabH.id)
-    if (!tabH) {
-      tabHistory.unshift(generateHistoryTab(tab))
-    } else {
-      tabH.index = tab.index
+
+  if (isChrome121OrAbove) {
+    // 使用原生lastAccessed属性
+    tabs = tabs.filter((tab) => tab.id !== currentTab.id)
+    tabs.sort((a, b) => (b.lastAccessed || 0) - (a.lastAccessed || 0))
+
+    // 获取前一个活跃标签
+    const preActiveTab = tabs[0]
+
+    // 处理其他标签
+    tabs = tabs.slice(1).map((tab) => injectTab(tab))
+
+    // 如果有前一个活跃标签，添加到列表开头
+    if (preActiveTab) {
+      tabs.unshift(injectTab(preActiveTab, false, { desc: "Chrome tab" }))
     }
-  })
-  const currentIndex = tabHistory.findIndex((item) => {
-    if (item.id === currentTab?.id) {
-      return true
-    }
-  })
-  if (currentIndex !== -1) {
-    //push latest tab to tabHistory
-    tabHistory.splice(currentIndex, 1)
-    tabHistory.push(generateHistoryTab(currentTab))
-  }
-  let preActiveTab = getPreActiveTab()
-  let preActiveTab_chrome = null
-  tabs = tabHistory
-    .map((tab) => {
-      let matchingTab = tabs.find((tab_1) => tab_1.id == tab.id)
-      if (!matchingTab) return null
-      return { ...matchingTab, lastActiveTime: tab.lastActiveTime }
+  } else {
+    // 使用原有的tabHistory逻辑
+    tabs.map((tab) => {
+      let tabH = tabHistory.find((tabH) => tab.id == tabH.id)
+      if (!tabH) {
+        tabHistory.unshift(generateHistoryTab(tab))
+      } else {
+        tabH.index = tab.index
+      }
     })
-    .reverse()
-    .filter((tab) => tab)
-  tabs = tabs.filter((tab) => {
-    if (!tab.id) return false
-    if (currentTab?.id && tab.id === currentTab.id) return false
-    if (preActiveTab?.id && tab.id === preActiveTab?.id) {
-      preActiveTab_chrome = tab
-      return false
+    const currentIndex = tabHistory.findIndex((item) => {
+      if (item.id === currentTab?.id) {
+        return true
+      }
+    })
+    if (currentIndex !== -1) {
+      //push latest tab to tabHistory
+      tabHistory.splice(currentIndex, 1)
+      tabHistory.push(generateHistoryTab(currentTab))
     }
-    injectTab(tab)
-    return true
-  })
-  //todo: use group?
-  if (preActiveTab) {
-    tabs.unshift(injectTab(preActiveTab_chrome, false, { desc: "Chrome tab" }))
+    let preActiveTab = await getPreActiveTabAsync()
+    let preActiveTab_chrome = null
+    tabs = tabHistory
+      .map((tab) => {
+        let matchingTab = tabs.find((tab_1) => tab_1.id == tab.id)
+        if (!matchingTab) return null
+        return { ...matchingTab, lastActiveTime: tab.lastActiveTime }
+      })
+      .reverse()
+      .filter((tab) => tab)
+    tabs = tabs.filter((tab) => {
+      if (!tab.id) return false
+      if (currentTab?.id && tab.id === currentTab.id) return false
+      if (preActiveTab?.id && tab.id === preActiveTab?.id) {
+        preActiveTab_chrome = tab
+        return false
+      }
+      injectTab(tab)
+      return true
+    })
+    //todo: use group?
+    if (preActiveTab) {
+      tabs.unshift(
+        injectTab(preActiveTab_chrome, false, { desc: "Chrome tab" })
+      )
+    }
   }
-  // tabs.unshift(injectTab(currentTab,false));
+
   console.log(tabs, "after tabs")
-  console.log(tabHistory, "*****: tabHistory")
+  if (!isChrome121OrAbove) {
+    console.log(tabHistory, "*****: tabHistory")
+  }
   actions = actions.concat(tabs)
   console.log(actions, "action")
 }
@@ -614,11 +694,9 @@ const closeCurrentTab = () => {
 const removeBookmark = (bookmark) => {
   browserInstance.bookmarks.remove(bookmark.id)
 }
-function cycleTab() {
-  let l = tabHistory.length
-  let preActiveTab = l > 2 ? tabHistory[l - 2] : tabHistory[0]
-  // console.log(preActiveTab,'*****: tabs preActiveTab')
-
+async function cycleTab() {
+  let preActiveTab = await getPreActiveTabAsync()
+  if (!preActiveTab) return
   switchTab(preActiveTab)
 }
 async function getSpecialSearch(callback) {
