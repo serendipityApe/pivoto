@@ -1,7 +1,7 @@
 import { useWhyDidYouUpdate } from "ahooks"
 import cls from "classnames"
 import tailText from "data-text:~/styles/index.css"
-import type { PlasmoGetStyle } from "plasmo"
+import type { PlasmoCSConfig, PlasmoGetStyle } from "plasmo"
 import {
   useCallback,
   useDeferredValue,
@@ -29,21 +29,25 @@ import { processDomain, processDomains, promisify } from "~utils"
 
 import LocaleProvider from "./components/LocaleProvider"
 
+export const config: PlasmoCSConfig = {
+  matches: ["<all_urls>"],
+  all_frames: true
+}
 export const getStyle: PlasmoGetStyle = () => {
   const style = document.createElement("style")
   style.textContent = tailText
   return style
 }
 export function ContentInner({
-  initialOpen = false
+  isBlockCycle = false
 }: {
-  initialOpen?: boolean
+  isBlockCycle?: boolean
 }) {
   const isAltTimer = useRef(null)
 
   const [keyStates, setKeyStates] = useState({})
   const [originActions, setOriginActions] = useState<Action[]>([])
-  const [isOpen, setIsOpen] = useState(initialOpen)
+  const [isOpen, setIsOpen] = useState(isBlockCycle)
   const [activeIndex, setActiveIndex] = useState(0)
   const [searchValue, setSearchValue] = useState("")
   const [tags, setTags] = useState([])
@@ -136,14 +140,13 @@ export function ContentInner({
   function itemActiveDown() {
     setActiveIndex((pre) => (pre < filteredActions.length - 1 ? pre + 1 : 0))
   }
+  function clearRunTime() {
+    clearTimeout(isAltTimer.current)
+    isAltTimer.current = null
+    setIsOpen(false)
+    setSearchValue("")
+  }
   function handleAction(index: number) {
-    function clearRunTime() {
-      clearTimeout(isAltTimer.current)
-      isAltTimer.current = null
-      setIsOpen(false)
-      setSearchValue("")
-    }
-
     const action = filteredActions[index]
 
     if (action.type === "ai") {
@@ -354,6 +357,10 @@ export function ContentInner({
         } else if (isAltTimer.current) {
           itemActiveDown()
         }
+      } else if (message.request == "block-cycle-tab") {
+        console.log("block-cycle-tab", document.baseURI)
+      } else if (message.request == "close-pivoto-iframe") {
+        clearRunTime()
       }
     }
     // Recieve messages from background
@@ -365,6 +372,7 @@ export function ContentInner({
 
   useEffect(() => {
     const handleKeyDown = (e) => {
+      console.log(e.key, e, "keydown")
       // Prevent default action if one of the handled keys is pressed
       if (
         isOpen &&
@@ -414,25 +422,22 @@ export function ContentInner({
         e.preventDefault()
         setKeyStates(newKeyStates)
       }
-      // const altShiftP =
-      //   newKeyStates["Alt"] && newKeyStates["Shift"] && e.key === "p"
-      // const altShiftM =
-      //   newKeyStates["Alt"] && newKeyStates["Shift"] && e.key === "m"
-      // const altShiftC =
-      //   newKeyStates["Alt"] && newKeyStates["Shift"] && e.key === "c"
-      // if (altShiftP) {
-      //   // updateActionsAndSendRequest('pin-tab');
-      // } else if (altShiftM) {
-      //   // updateActionsAndSendRequest('mute-tab');
-      // } else if (altShiftC) {
-      //   window.open("mailto:")
-      // } else
+      // if (isOpen && e.key === "Meta" && isBlockCycle) {
+      //   if (filteredActions.length) {
+      //     handleAction(activeIndex)
+      //     //close this tab
+      //     window.close()
+      //   }
+      // }
       if (!e.altKey && isAltTimer.current) {
         if (isOpen) {
           if (filteredActions.length) handleAction(activeIndex)
         } else {
           chrome.runtime.sendMessage({ request: "cycle-tab" })
           setIsOpen(false)
+        }
+        if (window.self !== window.top) {
+          chrome.runtime.sendMessage({ request: "close-pivoto-iframe" })
         }
         clearTimeout(isAltTimer.current)
         isAltTimer.current = null
@@ -477,7 +482,7 @@ export function ContentInner({
       <div
         id="pivoto-extension"
         className={cls("block", {
-          hidden: !isOpen
+          hidden: !isOpen || window.self !== window.top
         })}>
         <div
           id="pivoto-wrap"

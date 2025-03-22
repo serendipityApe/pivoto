@@ -71,7 +71,7 @@ function getPreActiveTab() {
           ([currentTab]) => {
             // 找到第一个不是当前标签页的标签
             const preActiveTab = sortedTabs.find(
-              (tab) => tab.id !== currentTab.id
+              (tab) => tab.id && tab.id !== currentTab.id
             )
             resolve(preActiveTab || null)
           }
@@ -257,26 +257,50 @@ const clearActions = async () => {
 
 // Open on install
 browserInstance.runtime.onInstalled.addListener((object) => {
-  // console.log('*****: installed')
-
   // Inject Pivoto on install
   const manifest = browserInstance.runtime.getManifest()
 
   const injectIntoTab = (tab) => {
-    const scripts = manifest.content_scripts[0].js
-    const s = scripts.length
-
-    for (let i = 0; i < s; i++) {
-      browserInstance.scripting.executeScript({
-        target: { tabId: tab.id },
-        files: [scripts[i]]
-      })
+    // 确保content_scripts存在且有内容
+    if (!manifest.content_scripts || manifest.content_scripts.length === 0) {
+      console.error("No content scripts found in manifest")
+      return
     }
 
-    browserInstance.scripting.insertCSS({
-      target: { tabId: tab.id },
-      files: [manifest.content_scripts[0].css[0]]
-    })
+    const scripts = manifest.content_scripts[0].js
+    if (scripts && scripts.length > 0) {
+      for (let i = 0; i < scripts.length; i++) {
+        browserInstance.scripting
+          .executeScript({
+            target: { tabId: tab.id },
+            files: [scripts[i]]
+          })
+          .catch((err) =>
+            console.error(`Script injection error for ${scripts[i]}:`, err)
+          )
+      }
+    } else {
+      // 如果manifest中没有定义content scripts，直接注入content.tsx编译后的文件
+      browserInstance.scripting
+        .executeScript({
+          target: { tabId: tab.id },
+          files: ["content.js"] // 假设content.tsx编译后的文件名为content.js
+        })
+        .catch((err) => console.error("Content script injection error:", err))
+    }
+
+    // 注入CSS
+    if (
+      manifest.content_scripts[0].css &&
+      manifest.content_scripts[0].css.length > 0
+    ) {
+      browserInstance.scripting
+        .insertCSS({
+          target: { tabId: tab.id },
+          files: [manifest.content_scripts[0].css[0]]
+        })
+        .catch((err) => console.error("CSS injection error:", err))
+    }
   }
 
   // Get all windows
@@ -297,13 +321,20 @@ browserInstance.runtime.onInstalled.addListener((object) => {
 
         for (let j = 0; j < t; j++) {
           currentTab = currentWindow.tabs[j]
+          // 只在可注入的页面上注入脚本
           if (
+            currentTab.url &&
             !currentTab.url.includes("chrome://") &&
             !currentTab.url.includes("chrome-extension://") &&
-            !currentTab.url.includes("browserInstance.google.com")
+            !currentTab.url.includes("chrome.google.com") &&
+            !currentTab.url.includes("edge://") &&
+            !currentTab.url.includes("about:") &&
+            !currentTab.url.includes("mozilla.org")
           ) {
+            console.log(
+              `Injecting into tab: ${currentTab.id} - ${currentTab.url}`
+            )
             injectIntoTab(currentTab)
-            // let cIndex = indexMap.get(currentTab.windowId) || 0;
             tabHistory.push(
               generateHistoryTab(currentTab, { lastActiveTime: now })
             )
@@ -313,32 +344,11 @@ browserInstance.runtime.onInstalled.addListener((object) => {
     }
   )
 
+  // 其余代码保持不变...
   if (object.reason === "install") {
     browserInstance.tabs.create({
-      url: "https://github.com/serendipityApe/pivoto"
+      url: "https://pivoto.vercel.app?type=installed"
     })
-    // Define default configuration
-    // const defaultConfig = {
-    //   specialSearch: [
-    //     {
-    //       id: "default",
-    //       description: "Search in chrome",
-    //       url: "https://www.google.com/chrome/"
-    //     }
-    //   ]
-    // }
-
-    // // Set default configuration in storage
-    // chrome.storage.local.set(defaultConfig, () => {
-    //   if (chrome.runtime.lastError) {
-    //     console.error(
-    //       "Error setting default storage:",
-    //       chrome.runtime.lastError
-    //     )
-    //   } else {
-    //     console.log("Default storage set successfully.")
-    //   }
-    // })
   }
 })
 
@@ -383,22 +393,9 @@ browserInstance.commands.onCommand.addListener(async (command) => {
         !currentTab.url.includes("chrome://") &&
         !currentTab.url.includes("chrome.google.com")
       ) {
-        browserInstance.scripting.executeScript(
-          {
-            target: { tabId: currentTab.id },
-            func: () => document.activeElement.tagName.toLowerCase()
-          },
-          function (InjectionResult) {
-            const result = InjectionResult?.[0]?.result
-            if (result === "iframe") {
-              switchTab(preActiveTab)
-            } else if (result) {
-              browserInstance.tabs.sendMessage(currentTab.id, {
-                request: "cycle-tab"
-              })
-            }
-          }
-        )
+        browserInstance.tabs.sendMessage(currentTab.id, {
+          request: "cycle-tab"
+        })
       } else {
         switchTab(preActiveTab)
       }
@@ -451,17 +448,6 @@ browserInstance.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   handleBatch(resetPivoto)
 })
 browserInstance.tabs.onCreated.addListener((tab) => handleBatch(resetPivoto))
-// browserInstance.tabs.onRemoved.addListener((tabId, changeInfo) => handleBatch(resetPivoto));
-// browserInstance.tabs.onActiveChanged.addListener((tab) => {
-
-// })
-
-// browserInstance.tabs.onActivated.addListener(async () => {
-// 	if(lastActiveTab?.id !== currentTab?.id) lastActiveTab = currentTab;
-// 	currentTab = await getCurrentTab();
-
-// 	handleBatch(resetPivoto);
-// })
 
 // Get tabs to populate in the actions
 const getTabs = async () => {
@@ -745,6 +731,11 @@ browserInstance.runtime.onMessage.addListener(
         break
       case "cycle-tab":
         cycleTab()
+        break
+      case "close-pivoto-iframe":
+        browserInstance.tabs.sendMessage(sender.tab.id, {
+          request: "close-pivoto-iframe"
+        })
         break
       case "create-to-tab":
         browserInstance.tabs.create({ url: message.query.url }, function (tab) {

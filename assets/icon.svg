@@ -1,20 +1,19 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 107.18 107.18">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="128" height="128">
   <defs>
-    <style>
-      .cls-1 {
-        fill: #109be6;
-        stroke-width: 0px;
-      }
-    </style>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" class="text-purple-400" stop-color="rgb(192, 132, 252)" />
+      <stop offset="100%" class="text-sky-400" stop-color="rgb(56, 189, 248)" />
+    </linearGradient>
+    <mask id="circle-mask">
+      <rect width="24" height="24" fill="white" />
+      <circle cx="12" cy="12" r="3" fill="black" />
+    </mask>
   </defs>
-  <g id="Layer_1-2" data-name="Layer 1">
-    <g>
-      <path class="cls-1" d="M3.9,49.12h12.35c1.03,0,2.03-.41,2.76-1.14l28.98-28.98c.73-.73,1.14-1.72,1.14-2.76V3.9c0-2.15-1.75-3.9-3.9-3.9H3.9C1.75,0,0,1.75,0,3.9v41.33c0,2.15,1.75,3.9,3.9,3.9Z"/>
-      <path class="cls-1" d="M103.28,49.12h-12.35c-1.03,0-2.03-.41-2.76-1.14l-28.98-28.98c-.73-.73-1.14-1.72-1.14-2.76V3.9C58.05,1.75,59.8,0,61.95,0h41.33c2.15,0,3.9,1.75,3.9,3.9v41.33c0,2.15-1.75,3.9-3.9,3.9Z"/>
-      <path class="cls-1" d="M3.9,58.05h12.35c1.03,0,2.03.41,2.76,1.14l28.98,28.98c.73.73,1.14,1.72,1.14,2.76v12.35c0,2.15-1.75,3.9-3.9,3.9H3.9c-2.15,0-3.9-1.75-3.9-3.9v-41.33c0-2.15,1.75-3.9,3.9-3.9Z"/>
-      <path class="cls-1" d="M103.28,58.05h-12.35c-1.03,0-2.03.41-2.76,1.14l-28.98,28.98c-.73.73-1.14,1.72-1.14,2.76v12.35c0,2.15,1.75,3.9,3.9,3.9h41.33c2.15,0,3.9-1.75,3.9-3.9v-41.33c0-2.15-1.75-3.9-3.9-3.9Z"/>
-      <circle class="cls-1" cx="53.59" cy="53.59" r="22.33"/>
-    </g>
+
+  <g mask="url(#circle-mask)">
+    <path
+      d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"
+      fill="url(#gradient)"
+    />
   </g>
 </svg>

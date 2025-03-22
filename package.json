@@ -1,13 +1,14 @@
 {
   "name": "pivoto",
-  "displayName": "Pivoto",
-  "version": "0.0.1",
-  "description": "Pivoto is a browser extension designed to transform your browsing experience.",
+  "displayName": "Pivoto - Tab Switcher & Manager",
+  "version": "0.0.2",
+  "description": "Pivoto helps users switch tabs quickly and stay focused. This extension designed to transform your browsing experience.",
   "author": "leyuan",
   "scripts": {
     "dev": "plasmo dev",
     "build": "plasmo build",
-    "package": "plasmo package"
+    "package": "plasmo package",
+    "publish": "plasmo build && cd build && zip -r chrome-mv3-prod.zip chrome-mv3-prod/"
   },
   "dependencies": {
     "@nextui-org/react": "^2.6.10",
@@ -48,14 +49,14 @@
       "open-pivoto": {
         "suggested_key": {
           "default": "Ctrl+Shift+K",
-          "mac": "Command+Shift+K"
+          "mac": "Alt+Shift+K"
         },
         "description": "Open command menu"
       },
       "cycle-tab": {
         "suggested_key": {
-          "default": "Ctrl+Q",
-          "mac": "Option+Q"
+          "default": "Alt+Q",
+          "mac": "Alt+Q"
         },
         "description": "back to the previous tab"
       }
@@ -63,16 +64,16 @@
     "permissions": [
       "tabs",
       "activeTab",
-      "bookmarks",
-      "tabGroups",
-      "browsingData",
-      "history",
       "scripting",
       "search",
       "window",
       "commands",
       "favicon",
-      "storage"
+      "storage",
+      "history",
+      "browsingData",
+      "bookmarks",
+      "tabGroups"
     ],
     "web_accessible_resources": [
       {

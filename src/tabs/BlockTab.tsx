@@ -5,7 +5,7 @@ import "../styles/index.css"
 import { ContentInner } from "~content"
 
 const BlockTab = () => {
-  return <ContentInner initialOpen />
+  return <ContentInner isBlockCycle />
 }
 
 export default BlockTab
