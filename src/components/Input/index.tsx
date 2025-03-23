@@ -9,9 +9,9 @@ import React, {
   useState
 } from "react"
 
+import { useLocale } from "~/locales"
 import KeyTag from "~components/KeyTag"
 import { tagKeys, TagStartKey } from "~constants"
-import { useLocale } from "~/locales"
 import { Trie } from "~utils/trie"
 
 type TagInputFieldProps = {
@@ -118,20 +118,20 @@ const TagInputField = forwardRef<HTMLInputElement, TagInputFieldProps>(
     const onKeyUp = () => {
       setIsKeyReleased(true)
     }
-    const { t } = useLocale();
+    const { t } = useLocale()
     const placeholderText = useMemo(() => {
-      if (disabled) return t('input.disabled')
+      if (disabled) return t("input.disabled")
       switch (tags[0]) {
         case "bookmark":
-          return t('input.search.bookmarks')
+          return t("input.search.bookmarks")
         case "history":
-          return t('input.search.history')
+          return t("input.search.history")
         case "ai":
-          return t('input.search.ai')
+          return t("input.search.ai")
         case "actions":
-          return t('input.search.actions')
+          return t("input.search.actions")
         default:
-          return t('input.search.default').replace('@', TagStartKey)
+          return t("input.search.default").replace("@", TagStartKey)
       }
     }, [tags, disabled, t])
     // const deleteTag = (index) => {
@@ -170,7 +170,12 @@ const TagInputField = forwardRef<HTMLInputElement, TagInputFieldProps>(
           )}
           {showActionsSuggestion && (
             <span className="absolute right-4 text-gray-400 text-sm">
-              {t('search.actions')} <KeyTag>Tab</KeyTag>
+              {t("search.actions")} <KeyTag>Tab</KeyTag>
+            </span>
+          )}
+          {suggestion && !input.startsWith(suggestion) && (
+            <span className="absolute right-4 text-gray-400 text-sm">
+              <KeyTag>Tab</KeyTag>
             </span>
           )}
         </span>

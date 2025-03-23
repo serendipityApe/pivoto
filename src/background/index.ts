@@ -98,7 +98,7 @@ function generateHistoryTab(tab, override = {}): TabHistoryItem {
 }
 
 function getFavicon(domain) {
-  return `http://www.google.com/s2/favicons?domain=${domain}`
+  return `http://www.google.com/s2/favicons?domain=${domain}&sz=128`
 }
 
 function isValidUrl(url) {
@@ -346,6 +346,16 @@ browserInstance.runtime.onInstalled.addListener((object) => {
 
   // 其余代码保持不变...
   if (object.reason === "install") {
+    storage.set({
+      specialSearch: [
+        {
+          description: "Search in chrome",
+          id: "default-search-0",
+          searchUrl: "https://www.google.com/search?q=%s",
+          title: "open new tab"
+        }
+      ]
+    })
     browserInstance.tabs.create({
       url: "https://pivoto.vercel.app?type=installed"
     })
@@ -484,7 +494,9 @@ const getTabs = async () => {
 
   if (isChrome121OrAbove) {
     // 使用原生lastAccessed属性
-    tabs = tabs.filter((tab) => tab.id !== currentTab.id)
+    tabs = currentTab?.id
+      ? tabs.filter((tab) => tab.id !== currentTab.id)
+      : tabs
     tabs.sort((a, b) => (b.lastAccessed || 0) - (a.lastAccessed || 0))
 
     // 获取前一个活跃标签
@@ -545,12 +557,10 @@ const getTabs = async () => {
     }
   }
 
-  console.log(tabs, "after tabs")
-  if (!isChrome121OrAbove) {
-    console.log(tabHistory, "*****: tabHistory")
-  }
+  // if (!isChrome121OrAbove) {
+  //   console.log(tabHistory, "*****: tabHistory")
+  // }
   actions = actions.concat(tabs)
-  console.log(actions, "action")
 }
 
 // Get bookmarks to populate in the actions
@@ -723,8 +733,7 @@ browserInstance.runtime.onMessage.addListener(
           sendResponse({ actions })
           handleBatch(resetPivoto)
         })
-
-        break
+        return true
       }
       case "only-open":
         sendResponse({ actions: actions })

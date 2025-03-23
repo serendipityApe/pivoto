@@ -251,23 +251,20 @@ export function ContentInner({
       ])
     } else if (tags.includes("actions")) {
       chrome.runtime.sendMessage({ request: "get-Actions" }, (response) => {
-        let actions = [
-          {
-            title: searchValue || t("action.open.new.tab"),
-            desc: t("action.search.in.chrome"),
-            action: "search",
-            type: "search",
-            url: "https://www.google.com/chrome/"
-          },
-          // set default action title
-          ...response.actions.map((action) => {
-            if (action.title) return action
-            return {
-              ...action,
-              title: searchValue
-            }
-          })
-        ]
+        const defaultAction = {
+          title: searchValue || t("action.open.new.tab"),
+          desc: t("action.search.in.chrome"),
+          action: "search",
+          type: "search",
+          url: "https://www.google.com/chrome/"
+        }
+        const customActions =
+          response?.actions?.map((action) => ({
+            ...action,
+            title: searchValue || action.title
+          })) || []
+
+        const actions = customActions
         setOriginActions(actions)
         setTrieData([
           ...tagKeys.map((key) => TagStartKey + key),
@@ -372,7 +369,6 @@ export function ContentInner({
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      console.log(e.key, e, "keydown")
       // Prevent default action if one of the handled keys is pressed
       if (
         isOpen &&
