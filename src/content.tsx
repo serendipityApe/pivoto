@@ -473,6 +473,10 @@ export function ContentInner({
     )
   }
   const isVirtualList = deferredIsTagMode || isTagMode
+  const inputOnchangeHandle = useCallback((value: string) => {
+    setSearchValue(value)
+    setActiveIndex(0)
+  }, [])
   return (
     <LocaleProvider>
       <div
@@ -494,10 +498,7 @@ export function ContentInner({
                 ref={(e) => e?.focus()}
                 disabled={InputDisabled}
                 value={searchValue}
-                onChange={(value) => {
-                  setSearchValue(value)
-                  setActiveIndex(0)
-                }}
+                onChange={inputOnchangeHandle}
                 showActionsSuggestion={canActiveActions}
               />
             </div>

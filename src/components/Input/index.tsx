@@ -51,12 +51,12 @@ const TagInputField = forwardRef<HTMLInputElement, TagInputFieldProps>(
     const [isKeyReleased, setIsKeyReleased] = useState(false)
     const activeTagMode = input.startsWith(TagStartKey) && tags.length < 1
     const [suggestion, setSuggestion] = useState("")
-    useWhyDidYouUpdate("Input", {
-      tags,
-      input,
-      suggestion,
-      propOnChange
-    })
+    // useWhyDidYouUpdate("Input", {
+    //   tags,
+    //   input,
+    //   suggestion,
+    //   propOnChange
+    // })
     // 创建 Trie 树并插入数据
     const trie = useMemo(() => {
       const trie = new Trie()
