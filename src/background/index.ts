@@ -708,6 +708,9 @@ async function getSpecialSearch(callback) {
 browserInstance.runtime.onMessage.addListener(
   (message, sender, sendResponse) => {
     switch (message.request) {
+      case "open-options-page":
+        chrome.tabs.create({ url: `options.html?tab=${message.query}` })
+        break
       case "reset-pivoto":
         resetPivoto()
         break

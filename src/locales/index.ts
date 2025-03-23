@@ -54,7 +54,15 @@ export const translations: Record<Language, Translations> = {
 
     // Default actions
     "action.open.new.tab": "open new tab",
-    "action.search.in.chrome": "Search in chrome"
+    "action.search.in.chrome": "Search in chrome",
+
+    // Shortcuts section
+    "shortcuts.title": "Shortcuts",
+    "shortcuts.subtitle": "Set shortcuts",
+    "shortcuts.command": "Command",
+    "shortcuts.shortcut": "Shortcut",
+    "shortcuts.not_set": "Not Set",
+    "shortcuts.open_settings": "Open Chrome Shortcuts Settings"
   },
   zh: {
     // Navigation and UI elements
@@ -87,6 +95,14 @@ export const translations: Record<Language, Translations> = {
 
     // Default actions
     "action.open.new.tab": "打开新标签页",
-    "action.search.in.chrome": "在Chrome中搜索"
+    "action.search.in.chrome": "在Chrome中搜索",
+
+    // Shortcuts section
+    "shortcuts.title": "快捷键",
+    "shortcuts.subtitle": "设置快捷键",
+    "shortcuts.command": "命令",
+    "shortcuts.shortcut": "快捷键",
+    "shortcuts.not_set": "未设置",
+    "shortcuts.open_settings": "打开Chrome快捷键设置"
   }
 }

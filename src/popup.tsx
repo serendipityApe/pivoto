@@ -152,13 +152,19 @@ function IndexPopup() {
             <Listbox aria-label="Listbox menu with sections" variant="flat">
               <ListboxSection>
                 <ListboxItem
-                  key="new"
+                  key="general"
                   onPress={() => {
-                    if (chrome.runtime.openOptionsPage) {
-                      chrome.runtime.openOptionsPage()
-                    } else {
-                      window.open(chrome.runtime.getURL("options.html"))
-                    }
+                    chrome.runtime.sendMessage({
+                      request: "open-options-page",
+                      query: "general"
+                    })
+                    // if (chrome.runtime.openOptionsPage) {
+                    //   chrome.runtime.openOptionsPage()
+                    // } else {
+                    //   window.open(
+                    //     chrome.runtime.getURL("options.html?tab=general")
+                    //   )
+                    // }
                   }}
                   description="Customize your preferences"
                   startContent={
@@ -167,23 +173,35 @@ function IndexPopup() {
                   Settings
                 </ListboxItem>
                 <ListboxItem
-                  key="copy"
+                  onPress={() => {
+                    chrome.runtime.sendMessage({
+                      request: "open-options-page",
+                      query: "changelogs"
+                    })
+                  }}
+                  key="changelogs"
                   description="View recent updates"
                   startContent={<AddNoteIcon className={iconClasses} />}>
                   Changelogs
                 </ListboxItem>
                 <ListboxItem
-                  key="edit"
+                  onPress={() => {
+                    chrome.runtime.sendMessage({
+                      request: "open-options-page",
+                      query: "faq"
+                    })
+                  }}
+                  key="faq"
                   description="Find answers to common questions"
                   startContent={<CopyDocumentIcon className={iconClasses} />}>
                   FAQ
                 </ListboxItem>
-                <ListboxItem
+                {/* <ListboxItem
                   key="edit"
                   description="Submit your suggestions"
                   startContent={<EditDocumentIcon className={iconClasses} />}>
                   Feedback
-                </ListboxItem>
+                </ListboxItem> */}
               </ListboxSection>
               {/* <ListboxSection title="Danger zone">
               <ListboxItem
