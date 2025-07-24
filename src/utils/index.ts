@@ -1,7 +1,23 @@
-export function getLastActiveTimeString(lastActiveTime: number) {
+export function getLastActiveTimeString(lastActiveTime: number, t?: (key: string) => string) {
   function padTo2Digits(num: number) {
     return num.toString().padStart(2, "0")
   }
+  
+  // 如果没有传入翻译函数，使用默认的英文
+  const translate = t || ((key: string) => {
+    const defaultTranslations: { [key: string]: string } = {
+      "time.second.singular": "second ago",
+      "time.second.plural": "seconds ago",
+      "time.minute.singular": "minute ago",
+      "time.minute.plural": "minutes ago",
+      "time.hour.singular": "hour ago",
+      "time.hour.plural": "hours ago",
+      "time.day.singular": "day ago",
+      "time.day.plural": "days ago"
+    }
+    return defaultTranslations[key] || key
+  })
+  
   if (lastActiveTime) {
     const millisecondsAgo = Date.now() - lastActiveTime
     const secondsAgo = Math.floor(millisecondsAgo / 1000)
@@ -10,13 +26,13 @@ export function getLastActiveTimeString(lastActiveTime: number) {
     const daysAgo = Math.floor(hoursAgo / 24)
 
     if (secondsAgo < 60) {
-      return secondsAgo + (secondsAgo === 1 ? " second ago" : " seconds ago")
+      return secondsAgo + " " + translate(secondsAgo === 1 ? "time.second.singular" : "time.second.plural")
     } else if (minutesAgo < 60) {
-      return minutesAgo + (minutesAgo === 1 ? " minute ago" : " minutes ago")
+      return minutesAgo + " " + translate(minutesAgo === 1 ? "time.minute.singular" : "time.minute.plural")
     } else if (hoursAgo < 24) {
-      return hoursAgo + (hoursAgo === 1 ? " hour ago" : " hours ago")
+      return hoursAgo + " " + translate(hoursAgo === 1 ? "time.hour.singular" : "time.hour.plural")
     } else if (daysAgo === 1) {
-      return "1 day ago"
+      return "1 " + translate("time.day.singular")
     } else if (daysAgo > 1) {
       const date = new Date(lastActiveTime)
       const year = date.getFullYear()

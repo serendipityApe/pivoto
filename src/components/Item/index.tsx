@@ -38,10 +38,11 @@ const Item = memo(
     incognito,
     CustomIcon,
     favIconUrl,
-    action
+    action,
+    lastAccessed
   }: ItemProps) => {
     const { t } = useLocale();
-    const lastText = getLastActiveTimeString(lastActiveTime || lastVisitTime)
+    const lastText = getLastActiveTimeString(lastActiveTime || lastVisitTime || lastAccessed, t)
     // const domain = url ? new URL(url)?.hostname : null
     domain = domain || processDomain(url)
     let tmpDesc = corsTranslate(desc)

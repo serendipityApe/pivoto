@@ -62,7 +62,17 @@ export const translations: Record<Language, Translations> = {
     "shortcuts.command": "Command",
     "shortcuts.shortcut": "Shortcut",
     "shortcuts.not_set": "Not Set",
-    "shortcuts.open_settings": "Open Chrome Shortcuts Settings"
+    "shortcuts.open_settings": "Open Chrome Shortcuts Settings",
+
+    // Time related
+    "time.second.singular": "second ago",
+    "time.second.plural": "seconds ago",
+    "time.minute.singular": "minute ago",
+    "time.minute.plural": "minutes ago",
+    "time.hour.singular": "hour ago",
+    "time.hour.plural": "hours ago",
+    "time.day.singular": "day ago",
+    "time.day.plural": "days ago"
   },
   zh: {
     // Navigation and UI elements
@@ -103,6 +113,16 @@ export const translations: Record<Language, Translations> = {
     "shortcuts.command": "命令",
     "shortcuts.shortcut": "快捷键",
     "shortcuts.not_set": "未设置",
-    "shortcuts.open_settings": "打开Chrome快捷键设置"
+    "shortcuts.open_settings": "打开Chrome快捷键设置",
+
+    // Time related
+    "time.second.singular": "秒前",
+    "time.second.plural": "秒前",
+    "time.minute.singular": "分钟前",
+    "time.minute.plural": "分钟前",
+    "time.hour.singular": "小时前",
+    "time.hour.plural": "小时前",
+    "time.day.singular": "天前",
+    "time.day.plural": "天前"
   }
 }
