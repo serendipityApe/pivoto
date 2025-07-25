@@ -369,6 +369,11 @@ export function ContentInner({
 
   useEffect(() => {
     const handleKeyDown = (e) => {
+      // 如果正在使用中文输入法，忽略所有按键事件
+      if (e.isComposing) {
+        return
+      }
+      
       // Prevent default action if one of the handled keys is pressed
       if (
         isOpen &&

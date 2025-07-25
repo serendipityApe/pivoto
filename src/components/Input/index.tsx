@@ -49,7 +49,25 @@ const TagInputField = forwardRef<HTMLInputElement, TagInputFieldProps>(
       // })
     }
     const [isKeyReleased, setIsKeyReleased] = useState(false)
-    const activeTagMode = input.startsWith(TagStartKey) && tags.length < 1
+    
+    // 检查当前输入是否在标签模式
+    const getActiveTagInfo = () => {
+      const atIndex = input.lastIndexOf(TagStartKey)
+      if (atIndex === -1) return { active: false, tagStart: -1, tagText: "" }
+      
+      // 检查@符号后是否有空格，如果有则不激活标签模式
+      const afterAt = input.slice(atIndex + 1)
+      if (afterAt.includes(" ")) return { active: false, tagStart: -1, tagText: "" }
+      
+      return {
+        active: true,
+        tagStart: atIndex,
+        tagText: afterAt
+      }
+    }
+    
+    const activeTagInfo = getActiveTagInfo()
+    const activeTagMode = activeTagInfo.active && tags.length < 1
     const [suggestion, setSuggestion] = useState("")
     // useWhyDidYouUpdate("Input", {
     //   tags,
@@ -67,12 +85,25 @@ const TagInputField = forwardRef<HTMLInputElement, TagInputFieldProps>(
     const onChange = (e) => {
       const value = e.target.value
       setInput(value)
+      
       startTransition(() => {
-        const bestMatch = value ? trie.searchBestMatch(value) : ""
+        // 如果在标签模式下，只搜索@符号后的内容
+        const atIndex = value.lastIndexOf(TagStartKey)
+        let searchText = value
+        
+        if (atIndex !== -1) {
+          const afterAt = value.slice(atIndex + 1)
+          if (!afterAt.includes(" ")) {
+            // 在标签模式下，搜索@符号后的内容
+            searchText = TagStartKey + afterAt
+          }
+        }
+        
+        const bestMatch = searchText ? trie.searchBestMatch(searchText) : ""
         setSuggestion(bestMatch)
       })
     }
-
+    
     const onKeyDown = (e) => {
       const { key } = e
       switch (key) {
@@ -83,7 +114,9 @@ const TagInputField = forwardRef<HTMLInputElement, TagInputFieldProps>(
               const trimmedInput = suggestion.trim().slice(1)
               if (tagKeys.includes(trimmedInput)) {
                 setTags((prevState) => [...prevState, trimmedInput])
-                setInput("")
+                // 移除@符号及其后的内容，保留@符号前的文本
+                const beforeAt = input.slice(0, activeTagInfo.tagStart)
+                setInput(beforeAt)
               }
             } else {
               // redo is valid when call document.execCommand
@@ -115,7 +148,7 @@ const TagInputField = forwardRef<HTMLInputElement, TagInputFieldProps>(
       }
     }
 
-    const onKeyUp = () => {
+    const onKeyUp = (e) => {
       setIsKeyReleased(true)
     }
     const { t } = useLocale()
@@ -165,7 +198,10 @@ const TagInputField = forwardRef<HTMLInputElement, TagInputFieldProps>(
             <input
               disabled
               className={cls(inputCls, "text-text3 dark:text-slate-500 -z-10")}
-              value={suggestion}
+              value={activeTagMode ? 
+                input.slice(0, activeTagInfo.tagStart) + suggestion :
+                suggestion
+              }
             />
           )}
           {showActionsSuggestion && (
